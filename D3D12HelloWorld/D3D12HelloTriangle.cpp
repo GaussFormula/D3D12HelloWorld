@@ -252,3 +252,43 @@ void D3D12HelloTriangle::OnUpdate()
 {
 
 }
+
+void D3D12HelloTriangle::OnRender()
+{
+    // Record all the commands we need to render the scene into the command list.
+    PopulateCommandList();
+}
+
+void D3D12HelloTriangle::OnDestroy()
+{
+    WaitForPreviousFrame();
+
+    CloseHandle(m_fenceEvent);
+}
+
+void D3D12HelloTriangle::PopulateCommandList()
+{
+    // Command list allocators can only be reset when the associated
+    // command lists have finished execution on the GPU; apps should use
+    // fences to determine GPU execution progress.
+    ThrowIfFailed(m_commandAllocator->Reset());
+
+    // However, when ExecuteCommandList() is called on a particular command
+    // list, that command list can then be reset at any time and must before
+    // re-recording.
+    ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), m_pipelineState.Get()));
+
+    // Set necessary state.
+    m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
+    m_commandList->RSSetViewports(1, &m_viewPort);
+    m_commandList->RSSetScissorRects(1, &m_scissorRect);
+
+    // Indicate that the back buffer will be used as a render target.
+    m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart(),m_frameIndex,m_rtvDescritorSize);
+    m_commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
+
+
+    // Record commands.
+
+}
