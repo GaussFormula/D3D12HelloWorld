@@ -129,3 +129,30 @@ void D3D12HelloSquare::LoadAssets()
 
     }
 }
+
+// Update frame-based values.
+void D3D12HelloSquare::OnUpdate()
+{
+
+}
+
+// Render the scene.
+void D3D12HelloSquare::OnRender()
+{
+
+}
+
+void D3D12HelloSquare::OnDestroy()
+{
+
+}
+
+void D3D12HelloSquare::PopulateCommandList()
+{
+
+}
+
+void D3D12HelloSquare::WaitForPreviousFrame()
+{
+
+}
