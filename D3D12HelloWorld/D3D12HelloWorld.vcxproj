@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="D3D12HelloSquare.h" />
     <ClInclude Include="D3D12HelloTriangle.h" />
     <ClInclude Include="D3D12HelloWindow.h" />
     <ClInclude Include="d3dx12.h" />
@@ -160,6 +161,7 @@
     <ClInclude Include="Win32Application.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="D3D12HelloSquare.cpp" />
     <ClCompile Include="D3D12HelloTriangle.cpp" />
     <ClCompile Include="D3D12HelloWindow.cpp" />
     <ClCompile Include="DXSample.cpp" />
