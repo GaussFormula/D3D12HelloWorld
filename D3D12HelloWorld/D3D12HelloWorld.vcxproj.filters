@@ -45,6 +45,9 @@
     <ClInclude Include="D3D12HelloSquare.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="D3D12HelloTexture.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -68,10 +71,13 @@
     <ClCompile Include="D3D12HelloSquare.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="D3D12HelloTexture.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="shaders.hlsl">
+    <CustomBuild Include="shaders.hlsl">
       <Filter>Assets\Shaders</Filter>
-    </FxCompile>
+    </CustomBuild>
   </ItemGroup>
 </Project>
