@@ -378,3 +378,25 @@ std::vector<UINT8> D3D12HelloTexture::GenerateTextureData()
     }
     return data;
 }
+
+// Update frame-based values.
+void D3D12HelloTexture::OnUpdate()
+{
+
+}
+
+// Render the scene.
+void D3D12HelloTexture::OnRender()
+{
+    // Record all the commands we need to render the scene into the command list.
+    PopulateCommandList();
+
+    // Execute the command list.
+    ID3D12CommandList* ppCommandLists[] = { m_commandList.Get() };
+    m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+    // Present the frame.
+    ThrowIfFailed(m_swapChain->Present(1, 0));
+
+    WaitForPreviousFrame();
+}
