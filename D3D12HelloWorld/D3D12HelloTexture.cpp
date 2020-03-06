@@ -2,11 +2,11 @@
 #include "D3D12HelloTexture.h"
 
 
-D3D12HelloTexture::D3D12HelloTexture(UINT width, UINT height, std::wstring name):
-    DXSample(width,height,name),
+D3D12HelloTexture::D3D12HelloTexture(UINT width, UINT height, std::wstring name) :
+    DXSample(width, height, name),
     m_frameIndex(0),
-    m_viewport(0.0f,0.0f,static_cast<FLOAT>(width),static_cast<FLOAT>(height)),
-    m_scissorRect(0,0,static_cast<LONG>(width),static_cast<LONG>(height)),
+    m_viewport(0.0f, 0.0f, static_cast<FLOAT>(width), static_cast<FLOAT>(height)),
+    m_scissorRect(0, 0, static_cast<LONG>(width), static_cast<LONG>(height)),
     m_rtvDescriptorSize(0)
 {}
 
@@ -28,7 +28,7 @@ void D3D12HelloTexture::LoadPipeline()
         if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
         {
             debugController->EnableDebugLayer();
-            
+
             // Enable additional debug layers.
             dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
         }
@@ -116,14 +116,14 @@ void D3D12HelloTexture::LoadPipeline()
         CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart());
 
         // Create a RTV for each frame buffer.
-        for (UINT n=0;n<FrameCount;n++)
+        for (UINT n = 0; n < FrameCount; n++)
         {
             ThrowIfFailed(m_swapChain->GetBuffer(n, IID_PPV_ARGS(&m_renderTarget[n])));
             m_device->CreateRenderTargetView(m_renderTarget[n].Get(), nullptr, rtvHandle);
             rtvHandle.Offset(1, m_rtvDescriptorSize);
         }
     }
-    
+
 }
 
 // Load the sample assets.
@@ -137,11 +137,11 @@ void D3D12HelloTexture::LoadAssets()
         // If CheckFeatureSupport succeeds, the HighestVersion 
         // returned will not be greater than this.
         featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
-        if (FAILED(m_device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE,&featureData,sizeof(featureData))))
+        if (FAILED(m_device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
         {
             featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
         }
-        CD3DX12_DESCRIPTOR_RANGE1 ranges[1];
+        CD3DX12_DESCRIPTOR_RANGE1 ranges[1] = {};
         ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC);
         CD3DX12_ROOT_PARAMETER1 rootParameters[1];
         rootParameters[0].InitAsDescriptorTable(1, &ranges[0], D3D12_SHADER_VISIBILITY_PIXEL);
@@ -195,63 +195,62 @@ void D3D12HelloTexture::LoadAssets()
 
         // Describe and create the graphics pipeline state object (PSO).
         D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-        psoDesc.InputLayout = { inputElementDescs,_countof(inputElementDescs) };
+        psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
         psoDesc.pRootSignature = m_rootSignature.Get();
         psoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
         psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
         psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
         psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-        psoDesc.DepthStencilState.DepthEnable = false;
-        psoDesc.DepthStencilState.StencilEnable = false;
+        psoDesc.DepthStencilState.DepthEnable = FALSE;
+        psoDesc.DepthStencilState.StencilEnable = FALSE;
         psoDesc.SampleMask = UINT_MAX;
         psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
         psoDesc.NumRenderTargets = 1;
         psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
         psoDesc.SampleDesc.Count = 1;
         ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
+    }
+    // Create command list.
+    ThrowIfFailed(m_device->CreateCommandList(
+        0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocator.Get(),
+        m_pipelineState.Get(), IID_PPV_ARGS(&m_commandList)
+    ));
 
-        // Create command list.
-        ThrowIfFailed(m_device->CreateCommandList(
-            0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocator.Get(),
-            m_pipelineState.Get(), IID_PPV_ARGS(&m_commandList)
+    // Create the vertex buffer.
+    {
+        // Describe the geometry for a triangle.
+        Vertex triangleVertices[] =
+        {
+            {{0.0f,0.25f * m_aspectRatio,0.0f},{0.5f,0.0f}},
+            {{0.25f,-0.25f * m_aspectRatio,0.0f},{1.0f,1.0f}},
+            {{-0.25f,-0.25f * m_aspectRatio,0.0f},{0.0f,1.0f}}
+        };
+
+        const UINT vertexBufferSize = sizeof(triangleVertices);
+
+        ThrowIfFailed(m_device->CreateCommittedResource(
+            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+            D3D12_HEAP_FLAG_NONE,
+            &CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
+            D3D12_RESOURCE_STATE_GENERIC_READ,
+            nullptr,
+            IID_PPV_ARGS(&m_vertexBuffer)
         ));
 
-        // Create the vertex buffer.
-        {
-            // Describe the geometry for a triangle.
-            Vertex triangleVertices[] =
-            {
-                {{0.0f,0.25f * m_aspectRatio,0.0f},{0.5f,0.0f}},
-                {{0.25f,-0.25f * m_aspectRatio,0.0f},{1.0f,1.0f}},
-                {{-0.25f,-0.25f * m_aspectRatio,0.0f},{0.0f,1.0f}}
-            };
-
-            const UINT vertexBufferSize = sizeof(triangleVertices);
-
-            ThrowIfFailed(m_device->CreateCommittedResource(
-                &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-                D3D12_HEAP_FLAG_NONE,
-                &CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
-                D3D12_RESOURCE_STATE_GENERIC_READ,
-                nullptr,
-                IID_PPV_ARGS(&m_vertexBuffer)
-            ));
-
-            // Copy triangle data to the vertex buffer.
-            UINT8* pVertexDataBegin;
-            CD3DX12_RANGE readRange(0, 0);  // We do not intend to read from this resource on the CPU.
-            ThrowIfFailed(m_vertexBuffer->Map(0, &readRange, reinterpret_cast<void**>(&pVertexDataBegin)));
-            memcpy(pVertexDataBegin, triangleVertices, sizeof(triangleVertices));
-            m_vertexBuffer->Unmap(0, nullptr);
+        // Copy triangle data to the vertex buffer.
+        UINT8* pVertexDataBegin;
+        CD3DX12_RANGE readRange(0, 0);  // We do not intend to read from this resource on the CPU.
+        ThrowIfFailed(m_vertexBuffer->Map(0, &readRange, reinterpret_cast<void**>(&pVertexDataBegin)));
+        memcpy(pVertexDataBegin, triangleVertices, sizeof(triangleVertices));
+        m_vertexBuffer->Unmap(0, nullptr);
 
 
-            // Initialize the vertex buffer view.
-            m_vertexBufferView.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress();
-            m_vertexBufferView.StrideInBytes = sizeof(Vertex);
-            m_vertexBufferView.SizeInBytes = vertexBufferSize;
-        }
-        
+        // Initialize the vertex buffer view.
+        m_vertexBufferView.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress();
+        m_vertexBufferView.StrideInBytes = sizeof(Vertex);
+        m_vertexBufferView.SizeInBytes = vertexBufferSize;
     }
+
 
     // Note: ComPtr's are CPU objects but this resource needs to stay in scope until
     // the command list that references it has finished executing on the GPU.
@@ -401,7 +400,7 @@ void D3D12HelloTexture::OnRender()
     WaitForPreviousFrame();
 }
 
-void D3D12HelloTexture::OnDestory()
+void D3D12HelloTexture::OnDestroy()
 {
     // Ensure that the GPU is no longer referencing resources that are about to be
     // cleaned up by the destructor.
@@ -429,4 +428,41 @@ void D3D12HelloTexture::PopulateCommandList()
     m_commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
     m_commandList->SetGraphicsRootDescriptorTable(0, m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+    m_commandList->RSSetViewports(1, &m_viewport);
+    m_commandList->RSSetScissorRects(1, &m_scissorRect);
+
+    // Indicate that the back buffer will be used as a render target.
+    m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTarget[m_frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart(), m_frameIndex, m_rtvDescriptorSize);
+    m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+
+    // Record commands.
+    const float clearColor[] = { 0.0f,0.2f,0.4f,1.0f };
+    m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+    m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
+    m_commandList->DrawInstanced(3, 1, 0, 0);
+
+    // Indicate that the back buffer will now be used to present.
+    m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTarget[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+
+    ThrowIfFailed(m_commandList->Close());
+}
+
+void D3D12HelloTexture::WaitForPreviousFrame()
+{
+    // Signal and increment the fence value.
+    const UINT64 fence = m_fenceValue;
+    ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), fence));
+    m_fenceValue++;
+
+    // Wait until the previous frame is finished.
+    if (m_fence->GetCompletedValue() < fence)
+    {
+        ThrowIfFailed(m_fence->SetEventOnCompletion(fence, m_fenceEvent));
+        WaitForSingleObject(m_fenceEvent, INFINITE);
+    }
+
+    m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
 }
