@@ -6,7 +6,9 @@ D3D12HelloSquare::D3D12HelloSquare(UINT width, UINT height, std::wstring name):
     m_frameIndex(0),
     m_viewport(0.0f,0.0f,static_cast<float>(width),static_cast<float>(height)),
     m_scissorRect(0,0,static_cast<long>(width),static_cast<long>(height)),
-    m_rtvDescriptorSize(0)
+    m_rtvDescriptorSize(0),
+    m_fenceEvent(nullptr),
+    m_fenceValue(0)
 {
 
 }
@@ -17,31 +19,22 @@ void D3D12HelloSquare::OnInit()
     LoadAssets();
 }
 
-void D3D12HelloSquare::LoadPipeline()
+void D3D12HelloSquare::InitDirect3DFactoryAndAdapater()
 {
     UINT dxgiFactoryFlags = 0;
 #if defined(_DEBUG)
-    // Enable the debug layer (requires the Graphics Tools "optional feature").
-    // NOTE: Enabling the debug layer after device creation will invalidate the active device.
+    ComPtr<ID3D12Debug> debugController;
+    if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
     {
-        ComPtr<ID3D12Debug> debugController;
-        if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
-        {
-            debugController->EnableDebugLayer();
-
-            // Enable additional debug layers.
-            dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
-        }
+        debugController->EnableDebugLayer();
+        dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
     }
 #endif
-
-    ComPtr<IDXGIFactory4> factory;
-    ThrowIfFailed(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&factory)));
+    ThrowIfFailed(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&m_factory)));
     if (m_useWarpDevice)
     {
         ComPtr<IDXGIAdapter> warpAdapter;
-        ThrowIfFailed(factory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
-
+        ThrowIfFailed(m_factory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
         ThrowIfFailed(D3D12CreateDevice(
             warpAdapter.Get(),
             D3D_FEATURE_LEVEL_11_0,
@@ -51,14 +44,26 @@ void D3D12HelloSquare::LoadPipeline()
     else
     {
         ComPtr<IDXGIAdapter1> hardwareAdapter;
-        GetHardwareAdapter(factory.Get(), &hardwareAdapter);
         
-        ThrowIfFailed(D3D12CreateDevice(
-            hardwareAdapter.Get(),
-            D3D_FEATURE_LEVEL_11_0,
-            IID_PPV_ARGS(&m_device)
-        ));
+        for (UINT adapterIndex = 0; DXGI_ERROR_NOT_FOUND != m_factory->EnumAdapters1(adapterIndex, &hardwareAdapter); adapterIndex++)
+        {
+            DXGI_ADAPTER_DESC1 desc;
+            hardwareAdapter->GetDesc1(&desc);
+            if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+            {
+                continue;
+            }
+            if (SUCCEEDED(D3D12CreateDevice(hardwareAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device))))
+            {
+                break;
+            }
+        }
     }
+}
+
+void D3D12HelloSquare::LoadPipeline()
+{
+    InitDirect3DFactoryAndAdapater();
 
     // Describe and create the command queue.
     D3D12_COMMAND_QUEUE_DESC queueDesc = {};
@@ -78,7 +83,7 @@ void D3D12HelloSquare::LoadPipeline()
     swapChainDesc.SampleDesc.Count = 1;
 
     ComPtr<IDXGISwapChain1> swapChain;
-    ThrowIfFailed(factory->CreateSwapChainForHwnd(
+    ThrowIfFailed(m_factory->CreateSwapChainForHwnd(
         m_commandQueue.Get(),   // Swap chain needs the queue so that it can force a flush on it.
         Win32Application::GetHwnd(),
         &swapChainDesc,
@@ -88,7 +93,7 @@ void D3D12HelloSquare::LoadPipeline()
         ));
 
     // This sample does not support fullscreen transitions.
-    ThrowIfFailed(factory->MakeWindowAssociation(Win32Application::GetHwnd(), DXGI_MWA_NO_ALT_ENTER));
+    ThrowIfFailed(m_factory->MakeWindowAssociation(Win32Application::GetHwnd(), DXGI_MWA_NO_ALT_ENTER));
     
     ThrowIfFailed(swapChain.As(&m_swapChain));
 

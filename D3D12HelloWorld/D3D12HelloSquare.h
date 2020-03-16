@@ -25,6 +25,7 @@ private:
     };
 
     // Pipeline Objects.
+    ComPtr<IDXGIFactory4> m_factory;
     CD3DX12_VIEWPORT m_viewport;
     CD3DX12_RECT m_scissorRect;
     ComPtr<IDXGISwapChain3> m_swapChain;
@@ -52,4 +53,7 @@ private:
     void LoadAssets();
     void PopulateCommandList();
     void WaitForPreviousFrame();
+
+    void CreateRtvAndDsvDescriptorHeaps();
+    void InitDirect3DFactoryAndAdapater();
 };
