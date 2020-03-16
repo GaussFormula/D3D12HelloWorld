@@ -1,5 +1,11 @@
 #pragma once
+#if defined(DEBUG)||defined(_DEBUG)
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+#endif
+
 #include <stdexcept>
+#include <comdef.h>
 #include "stdafx.h"
 using Microsoft::WRL::ComPtr;
 
@@ -9,23 +15,46 @@ inline std::string HrToString(HRESULT hr)
     sprintf_s(s_str, "HRESULT of 0x%08X", static_cast<UINT>(hr));
     return std::string(s_str);
 }
-class HrException :public std::runtime_error
+class HrException
 {
 public:
-    HrException(HRESULT hr):std::runtime_error(HrToString(hr)),m_hr(hr){}
+    HrException() = default;
+    HrException(HRESULT hr, const std::wstring& functionName, const std::wstring& filename, int lineNumber):
+        m_hr(hr),FunctionName(functionName),FileName(filename),LineNumber(lineNumber)
+    {}
+
+    std::wstring ToString()const
+    {
+        // Get the string description of the error code.
+        _com_error err(ErrorCode);
+        std::wstring msg = err.ErrorMessage();
+        return FunctionName + L" failed in " + FileName + L"; line " + std::to_wstring(LineNumber) + L"; error: " + msg;
+    }
     HRESULT Error()const { return m_hr; }
 private:
     const HRESULT m_hr;
+    HRESULT ErrorCode = S_OK;
+    std::wstring FunctionName;
+    std::wstring FileName;
+    int LineNumber = -1;
 };
 
-#define SAFE_RELEASE(p) if(p)(p)->Release()
-inline void ThrowIfFailed(HRESULT hr)
+inline std::wstring AnsiToWString(const std::string& str)
 {
-    if (FAILED(hr))
-    {
-        throw HrException(hr);
-    }
+    WCHAR buffer[512];
+    MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, buffer, 512);
+    return std::wstring(buffer);
 }
+
+#define SAFE_RELEASE(p) if(p)(p)->Release()
+#ifndef ThrowIfFailed
+#define ThrowIfFailed(x)                                              \
+{                                                                     \
+    HRESULT hr__ = (x);                                               \
+    std::wstring wfn = AnsiToWString(__FILE__);                       \
+    if(FAILED(hr__)) { throw HrException(hr__, L#x, wfn, __LINE__); } \
+}
+#endif
 
 inline void GetAssetsPath(_Out_writes_(pathSize) WCHAR* path, UINT pathSize)
 {

@@ -10,8 +10,21 @@
 #include <dxgi1_4.h>
 #include <D3Dcompiler.h>
 #include <DirectXMath.h>
+#include <DirectXPackedVector.h>
+#include <DirectXColors.h>
+#include <DirectXCollision.h>
+
 #include "d3dx12.h"
 
 #include <string>
 #include <wrl.h>
 #include <shellapi.h>
+#include <memory.h>
+#include <algorithm>
+#include <vector>
+#include <array>
+#include <unordered_map>
+#include <cstdint>
+#include <fstream>
+#include <sstream>
+#include <cassert>
