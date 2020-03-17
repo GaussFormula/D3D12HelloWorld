@@ -25,7 +25,7 @@ private:
     static const UINT TextureWidth = 256;
     static const UINT TextureHeight = 256;
     static const UINT TexturePixelSize = 4;
-    static const D3D12_COMMAND_LIST_TYPE CommandListType = D3D12_COMMAND_LIST_TYPE_DIRECT;
+    static const D3D12_COMMAND_LIST_TYPE CommandListType = D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT;
 
     struct Vertex
     {

@@ -77,7 +77,7 @@ void DXSample::ParseCommandLineArgs(_In_reads_(argc) WCHAR* argv[], int argc)
     }
 }
 
-void DXSample::InitFactoryDeviceAdapter()
+void DXSample::CreateFactoryDeviceAdapter()
 {
     UINT dxgiFactoryFlags = 0;
 #if defined(_DEBUG)
@@ -114,4 +114,40 @@ void DXSample::InitFactoryDeviceAdapter()
             }
         }
     }
+}
+
+void DXSample::CreateFence()
+{
+    ThrowIfFailed(m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
+}
+
+void DXSample::InitDescriptorSize()
+{
+    m_rtvDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    m_dsvDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+    m_cbvSrvUavDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+}
+
+void DXSample::CheckFeatureSupport()
+{
+    D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS msQualityLevel;
+    msQualityLevel.Format = m_backBufferFormat;
+    msQualityLevel.SampleCount = 4;
+    msQualityLevel.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;
+    msQualityLevel.NumQualityLevels = 0;
+    ThrowIfFailed(m_device->CheckFeatureSupport(
+        D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS,
+        &msQualityLevel,
+        sizeof(msQualityLevel)
+    ));
+    m_4xMsaaQuality = msQualityLevel.NumQualityLevels;
+    assert(m_4xMsaaQuality > 0 && "Unexpected MSAA quality level.");
+}
+
+void DXSample::CreateCommandObjects()
+{
+    D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+    queueDesc.Type = m_commandListType;
+    queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAGS::D3D12_COMMAND_QUEUE_FLAG_NONE;
+    ThrowIfFailed(m_device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_commandQueue)));
 }

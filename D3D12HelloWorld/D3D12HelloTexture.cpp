@@ -331,7 +331,7 @@ void D3D12HelloTexture::LoadAssets()
 
         // Create an event handle to use for frame synchronization.
         m_fenceEvent = CreateEvent(nullptr, false, false, nullptr);
-        if (m_fenceEvent = nullptr)
+        if (m_fenceEvent == nullptr)
         {
             ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
         }

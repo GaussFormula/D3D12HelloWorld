@@ -35,22 +35,34 @@ protected:
     std::wstring GetAssetFullPath(LPCWSTR assetName);
     void GetHardwareAdapter(_In_ IDXGIFactory2* pFactory, _Outptr_result_maybenull_ IDXGIAdapter1** ppAdapter);
     void SetCustomWindowText(LPCWSTR text);
-    void InitFactoryDeviceAdapter();
+    void CreateFactoryDeviceAdapter();
+    void CreateFence();
+    void InitDescriptorSize();
+    void CheckFeatureSupport();
+    void CreateCommandObjects();
 
-    //Viewport dimensions.
-    UINT m_width;
-    UINT m_height;
-    float m_aspectRatio;
+    
 
     //Adapter info.
     bool m_useWarpDevice;
 
     // Set True to use 4X MSAA. The default is false.
-    bool m4xMsaaState = false;  // Is 4xMsaa Enabled ?
-    UINT m4xMsaaQuality = 0;    // Quality level of 4X MSAA
+    bool m_4xMsaaState = false;  // Is 4xMsaa Enabled ?
+    UINT m_4xMsaaQuality = 0;    // Quality level of 4X MSAA
 
     // Used to keep track of the delta-time and game time
     GameTimer mTimer;
+
+    // Derived class should set these in derived constructor to customize starting values.
+    DXGI_FORMAT m_backBufferFormat = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
+    D3D_DRIVER_TYPE m_driverType = D3D_DRIVER_TYPE::D3D_DRIVER_TYPE_HARDWARE;
+    D3D12_COMMAND_LIST_TYPE m_commandListType = D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT;
+    
+    DXGI_FORMAT m_depthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    UINT m_width;
+    UINT m_height;
+    float m_aspectRatio;
+
 
     // Pipeline Objects.
     ComPtr<ID3D12CommandQueue>              m_commandQueue;
