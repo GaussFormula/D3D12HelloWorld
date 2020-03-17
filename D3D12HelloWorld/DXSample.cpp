@@ -47,7 +47,7 @@ void DXSample::GetHardwareAdapter(IDXGIFactory2* pFactory, IDXGIAdapter1** ppAda
 
         // Check to see if the adapter supports Direct3D 12, but don't create the
         // actual device yet.
-        if (SUCCEEDED(D3D12CreateDevice(adapter.Get(),D3D_FEATURE_LEVEL_11_0,_uuidof(ID3D12Device),nullptr)))
+        if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr)))
         {
             break;
         }
@@ -66,13 +66,52 @@ void DXSample::SetCustomWindowText(LPCWSTR text)
 _Use_decl_annotations_
 void DXSample::ParseCommandLineArgs(_In_reads_(argc) WCHAR* argv[], int argc)
 {
-    for (int i=1;i<argc;++i)
+    for (int i = 1; i < argc; ++i)
     {
         if (_wcsnicmp(argv[i], L"-warp", wcslen(argv[i])) == 0 ||
             _wcsnicmp(argv[i], L"/warp", wcslen(argv[i])) == 0)
         {
             m_useWarpDevice = true;
             m_title = m_title + L" (WARP)";
+        }
+    }
+}
+
+void DXSample::InitFactoryDeviceAdapter()
+{
+    UINT dxgiFactoryFlags = 0;
+#if defined(_DEBUG)
+    ComPtr<ID3D12Debug> debugController;
+    ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
+    debugController->EnableDebugLayer();
+    dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
+#endif
+    ThrowIfFailed(CreateDXGIFactory2(0, IID_PPV_ARGS(&m_factory)));
+    if (m_useWarpDevice)
+    {
+        ThrowIfFailed(m_factory->EnumWarpAdapter(IID_PPV_ARGS(&m_adapter)));
+        ThrowIfFailed(D3D12CreateDevice(
+            m_adapter.Get(),
+            D3D_FEATURE_LEVEL_11_0,
+            IID_PPV_ARGS(&m_device)
+        ));
+    }
+    else
+    {
+        for (UINT adapterIndex = 0; DXGI_ERROR_NOT_FOUND != m_factory->EnumAdapters1(adapterIndex, &m_adapter); adapterIndex++)
+        {
+            DXGI_ADAPTER_DESC1 desc;
+            m_adapter->GetDesc1(&desc);
+            if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+            {
+                //Don't select the Basic Render Driver adapter
+                //If you want a software adapter, pass in "warp" on the command line.
+                continue;
+            }
+            if (SUCCEEDED(D3D12CreateDevice(m_adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device))))
+            {
+                break;
+            }
         }
     }
 }
