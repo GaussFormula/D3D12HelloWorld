@@ -39,6 +39,9 @@ protected:
     void CreateFence();
     void InitDescriptorSize();
     void CheckFeatureSupport();
+    void CreateCommandQueue();
+    void CreateCommandAllocator();
+    void CreateCommandList();
     void CreateCommandObjects();
 
     

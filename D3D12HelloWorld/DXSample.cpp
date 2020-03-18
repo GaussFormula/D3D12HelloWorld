@@ -144,10 +144,38 @@ void DXSample::CheckFeatureSupport()
     assert(m_4xMsaaQuality > 0 && "Unexpected MSAA quality level.");
 }
 
-void DXSample::CreateCommandObjects()
+void DXSample::CreateCommandQueue()
 {
     D3D12_COMMAND_QUEUE_DESC queueDesc = {};
     queueDesc.Type = m_commandListType;
     queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAGS::D3D12_COMMAND_QUEUE_FLAG_NONE;
     ThrowIfFailed(m_device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_commandQueue)));
+}
+
+void DXSample::CreateCommandAllocator()
+{
+    ThrowIfFailed(m_device->CreateCommandAllocator(m_commandListType, IID_PPV_ARGS(&m_commandAllcator)));
+}
+
+void DXSample::CreateCommandList()
+{
+    ThrowIfFailed(m_device->CreateCommandList(
+        0,
+        m_commandListType,
+        m_commandAllcator.Get(),
+        nullptr,
+        IID_PPV_ARGS(&m_commandList)
+    ));
+
+    // Start off in a closed state.  This is because the first time we refer 
+    // to the command list we will Reset it, and it needs to be closed before
+    // calling Reset.
+    m_commandList->Close();
+}
+
+void DXSample::CreateCommandObjects()
+{
+    CreateCommandQueue();
+    CreateCommandAllocator();
+    CreateCommandList();
 }
