@@ -119,6 +119,12 @@ void DXSample::CreateFactoryDeviceAdapter()
 void DXSample::CreateFence()
 {
     ThrowIfFailed(m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
+    m_fenceValue = 1;
+    m_fenceEvent = CreateEvent(nullptr, false, false, nullptr);
+    if (m_fenceEvent == nullptr)
+    {
+        ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+    }
 }
 
 void DXSample::InitDescriptorSize()
@@ -212,3 +218,53 @@ void DXSample::CreateSwapChain()
     ThrowIfFailed(swapChain.As(&m_swapChain));
 }
 
+void DXSample::FlushCommandQueue()
+{
+    const UINT64 fence = m_fenceValue;
+    // Advance the fence value to mark commands up to this fence point.
+    m_fenceValue++;
+
+    // Add an instruction to the command queue to set a new fence point.
+    // Because we are on the GPU time line, the new fence point won't be set until
+    // the GPU finishes processing all the commands prior to this Signal().
+    ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), fence));
+
+    // Wait until the GPU has completed commands up to this fence point.
+    if (m_fence->GetCompletedValue() < fence)
+    {
+        // Fire event when GPU hits current fence.
+        ThrowIfFailed(m_fence->SetEventOnCompletion(fence, m_fenceEvent));
+
+        // Wait until the GPU hits current fence event is fired.
+        WaitForSingleObject(m_fenceEvent, INFINITE);
+    }
+    m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
+}
+
+void DXSample::CalculateFrameStats()
+{
+    // Code computes the average frames per second, and also the 
+    // average time it takes to render one frame.  These stats 
+    // are appended to the window caption bar.
+    static int frameCount = 0;
+    static float timeElapsed = 0.0f;
+
+    frameCount++;
+
+    // Compute average over one second period.
+    if ((mTimer.TotalTime() - timeElapsed) >= 1.0f)
+    {
+        float fps = (float)frameCount;
+        float mspf = 1000.0f / fps;
+
+        std::wstring fpsStr = std::to_wstring(fps);
+        std::wstring mspfStr = std::to_wstring(mspf);
+
+        std::wstring appendStr = L"    fps: " + fpsStr + L"    mspf: " + mspfStr;
+
+        SetCustomWindowText(appendStr.c_str());
+
+        frameCount = 0;
+        timeElapsed += 1.0f;
+    }
+}

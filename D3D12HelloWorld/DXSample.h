@@ -44,6 +44,15 @@ protected:
     virtual void CreateCommandList();
     void CreateCommandObjects();
     virtual void CreateSwapChain();
+    virtual void FlushCommandQueue();
+    void CalculateFrameStats();
+
+    /*virtual void BuildDescriptorHeaps() = 0;
+    virtual void BuildConstantBuffers() = 0;
+    virtual void BuildRootSignature() = 0;
+    virtual void BuildShaderAndInputLayout() = 0;
+    virtual void BuildBoxGeometry() = 0;
+    virtual void BuildPS0() = 0;*/
     
 
     //Adapter info.
