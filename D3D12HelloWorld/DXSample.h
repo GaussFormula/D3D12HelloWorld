@@ -35,15 +35,15 @@ protected:
     std::wstring GetAssetFullPath(LPCWSTR assetName);
     void GetHardwareAdapter(_In_ IDXGIFactory2* pFactory, _Outptr_result_maybenull_ IDXGIAdapter1** ppAdapter);
     void SetCustomWindowText(LPCWSTR text);
-    void CreateFactoryDeviceAdapter();
-    void CreateFence();
+    virtual void CreateFactoryDeviceAdapter();
+    virtual void CreateFence();
     void InitDescriptorSize();
-    void CheckFeatureSupport();
-    void CreateCommandQueue();
-    void CreateCommandAllocator();
-    void CreateCommandList();
+    virtual void CheckFeatureSupport();
+    virtual void CreateCommandQueue();
+    virtual void CreateCommandAllocator();
+    virtual void CreateCommandList();
     void CreateCommandObjects();
-
+    virtual void CreateSwapChain();
     
 
     //Adapter info.

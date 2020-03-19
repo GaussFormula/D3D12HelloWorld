@@ -179,3 +179,36 @@ void DXSample::CreateCommandObjects()
     CreateCommandAllocator();
     CreateCommandList();
 }
+
+void DXSample::CreateSwapChain()
+{
+    ComPtr<IDXGISwapChain1> swapChain;
+    DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
+    swapChainDesc.Width = m_width;
+    swapChainDesc.Height = m_height;
+    swapChainDesc.Format = m_backBufferFormat;
+    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    swapChainDesc.SampleDesc.Count = m_4xMsaaState ? 4 : 1;
+    swapChainDesc.SampleDesc.Quality = m_4xMsaaState ? (m_4xMsaaQuality - 1) : 0;
+
+    DXGI_SWAP_CHAIN_FULLSCREEN_DESC desc = {};
+    desc.RefreshRate = { 60,1 };
+    desc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+    desc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+    desc.Windowed = true;
+
+
+
+    ThrowIfFailed(m_factory->CreateSwapChainForHwnd(
+        m_commandQueue.Get(),
+        Win32Application::GetHwnd(),
+        &swapChainDesc,
+        &desc,
+        nullptr,
+        &swapChain
+    ));
+    ThrowIfFailed(m_factory->MakeWindowAssociation(Win32Application::GetHwnd(), DXGI_MWA_NO_ALT_ENTER));
+    ThrowIfFailed(swapChain.As(&m_swapChain));
+}
+
