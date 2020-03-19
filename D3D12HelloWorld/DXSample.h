@@ -36,7 +36,7 @@ protected:
     void GetHardwareAdapter(_In_ IDXGIFactory2* pFactory, _Outptr_result_maybenull_ IDXGIAdapter1** ppAdapter);
     void SetCustomWindowText(LPCWSTR text);
     virtual void CreateFactoryDeviceAdapter();
-    virtual void CreateFence();
+    virtual void CreateFenceObjects();
     void InitDescriptorSize();
     virtual void CheckFeatureSupport();
     virtual void CreateCommandQueue();

@@ -116,7 +116,7 @@ void DXSample::CreateFactoryDeviceAdapter()
     }
 }
 
-void DXSample::CreateFence()
+void DXSample::CreateFenceObjects()
 {
     ThrowIfFailed(m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
     m_fenceValue = 1;
