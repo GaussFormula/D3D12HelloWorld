@@ -2,17 +2,20 @@
 #include "D3D12HelloWindow.h"
 
 D3D12HelloWindow::D3D12HelloWindow(UINT width, UINT height, std::wstring name):
-    DXSample(width,height,name),
-    m_frameIndex(0),
-    m_rtvDescriptorSize(0)
+    DXSample(width,height,name)
 {
 
 }
 
 void D3D12HelloWindow::OnInit()
 {
-    LoadPipeline();
-    LoadAssets();
+    /*LoadPipeline();
+    LoadAssets();*/
+    CreateFactoryDeviceAdapter();
+    InitDescriptorSize();
+    CheckFeatureSupport();
+    CreateCommandObjects();
+    CreateFenceObjects();
 }
 
 // Load the rendering pipeline dependencies.

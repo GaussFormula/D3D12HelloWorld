@@ -47,12 +47,12 @@ protected:
     virtual void FlushCommandQueue();
     void CalculateFrameStats();
 
-    /*virtual void BuildDescriptorHeaps() = 0;
+    virtual void BuildDescriptorHeaps() = 0;
     virtual void BuildConstantBuffers() = 0;
     virtual void BuildRootSignature() = 0;
     virtual void BuildShaderAndInputLayout() = 0;
-    virtual void BuildBoxGeometry() = 0;
-    virtual void BuildPS0() = 0;*/
+    virtual void BuildOwnGeometry() = 0;
+    virtual void BuildPS0() = 0;
     
 
     //Adapter info.
@@ -78,7 +78,7 @@ protected:
 
     // Pipeline Objects.
     ComPtr<ID3D12CommandQueue>              m_commandQueue;
-    ComPtr<ID3D12CommandAllocator>          m_commandAllcator;
+    ComPtr<ID3D12CommandAllocator>          m_commandAllocator;
     ComPtr<ID3D12GraphicsCommandList>       m_commandList;
     ComPtr<IDXGISwapChain3>                 m_swapChain;
     ComPtr<IDXGIFactory4>                   m_factory;
@@ -87,18 +87,19 @@ protected:
     ComPtr<ID3D12DescriptorHeap>            m_srvHeap;
     ComPtr<ID3D12DescriptorHeap>            m_dsvHeap;
     ComPtr<ID3D12PipelineState>             m_pipelineState;
+    ComPtr<ID3D12PipelineState>             m_pipelineState;
+    ComPtr<ID3D12Device>                    m_device;
+    ComPtr<IDXGIAdapter1>                   m_adapter;
     UINT                                    m_rtvDescriptorSize = 0;
     UINT                                    m_dsvDescriptorSize = 0;
     UINT                                    m_cbvSrvUavDescriptorSize = 0;
-    ComPtr<ID3D12Device>                    m_device;
-    ComPtr<IDXGIAdapter1>                   m_adapter;
 
     // App resources.
     ComPtr<ID3D12Resource>                  m_vertexBuffer;
     D3D12_VERTEX_BUFFER_VIEW                m_vertexBufferView;
 
-    static const UINT                       FrameCount = 2;
-    ComPtr<ID3D12Resource>                  m_renderTarget[FrameCount];
+    //static const UINT                       FrameCount = 2;
+    //ComPtr<ID3D12Resource>                  m_renderTarget[FrameCount];
     ComPtr<ID3D12Resource>                  m_depthStencilBuffer;
 
     // Synchronization objects.

@@ -160,7 +160,7 @@ void DXSample::CreateCommandQueue()
 
 void DXSample::CreateCommandAllocator()
 {
-    ThrowIfFailed(m_device->CreateCommandAllocator(m_commandListType, IID_PPV_ARGS(&m_commandAllcator)));
+    ThrowIfFailed(m_device->CreateCommandAllocator(m_commandListType, IID_PPV_ARGS(&m_commandAllocator)));
 }
 
 void DXSample::CreateCommandList()
@@ -168,7 +168,7 @@ void DXSample::CreateCommandList()
     ThrowIfFailed(m_device->CreateCommandList(
         0,
         m_commandListType,
-        m_commandAllcator.Get(),
+        m_commandAllocator.Get(),
         nullptr,
         IID_PPV_ARGS(&m_commandList)
     ));
