@@ -3,11 +3,12 @@
 
 using namespace Microsoft::WRL;
 
-DXSample::DXSample(UINT width, UINT height, std::wstring name) :
+DXSample::DXSample(UINT width, UINT height, std::wstring name, UINT frameCount = 2) :
     m_width(width),
     m_height(height),
     m_title(name),
-    m_useWarpDevice(false)
+    m_useWarpDevice(false),
+    m_frameCount(frameCount)
 {
     WCHAR assetsPath[512];
     GetAssetsPath(assetsPath, _countof(assetsPath));
@@ -267,4 +268,41 @@ void DXSample::CalculateFrameStats()
         frameCount = 0;
         timeElapsed += 1.0f;
     }
+}
+
+bool DXSample::Get4xMsaaState() const
+{
+    return m_4xMsaaState;
+}
+
+void DXSample::Set4xMsaaState(bool value)
+{
+    if (m_4xMsaaState != value)
+    {
+        m_4xMsaaState = value;
+
+        // Recreate the swap chain and buffers with new multi sample setting.
+        CreateSwapChain();
+        OnResize();
+    }
+}
+
+void DXSample::OnResize()
+{
+    assert(m_device);
+    assert(m_swapChain);
+    assert(m_commandAllocator);
+
+    // Flush before changing any resources.
+    FlushCommandQueue();
+
+    ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), nullptr));
+
+    // Release the previous resources we will be recreating.
+    for (int i=0;i<m_frameCount;i++)
+    {
+        m_renderTargets[i].Reset();
+    }
+    m_depthStencilBuffer.Reset();
+
 }

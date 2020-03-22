@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "D3D12HelloWindow.h"
 
-D3D12HelloWindow::D3D12HelloWindow(UINT width, UINT height, std::wstring name):
-    DXSample(width,height,name)
+D3D12HelloWindow::D3D12HelloWindow(UINT width, UINT height, std::wstring name,UINT frameCount=2):
+    DXSample(width,height,name,frameCount)
 {
 
 }
@@ -72,7 +72,7 @@ void D3D12HelloWindow::LoadPipeline()
 
     //Describe and create the swap chain
     DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
-    swapChainDesc.BufferCount = FrameCount;
+    swapChainDesc.BufferCount = m_frameCount;
     swapChainDesc.Width = m_width;
     swapChainDesc.Height = m_height;
     swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -98,7 +98,7 @@ void D3D12HelloWindow::LoadPipeline()
     // Create descriptor heaps.
     {
         D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
-        rtvHeapDesc.NumDescriptors = FrameCount;
+        rtvHeapDesc.NumDescriptors = m_frameCount;
         rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
         rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
         ThrowIfFailed(m_device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_rtvHeap)));
@@ -111,7 +111,7 @@ void D3D12HelloWindow::LoadPipeline()
         CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart());
 
         // Create a RTV for each frame.
-        for (UINT n=0;n<FrameCount;++n)
+        for (UINT n=0;n<m_frameCount;++n)
         {
             ThrowIfFailed(m_swapChain->GetBuffer(n, IID_PPV_ARGS(&m_renderTargets[n])));
             m_device->CreateRenderTargetView(m_renderTargets[n].Get(), nullptr, rtvHandle);

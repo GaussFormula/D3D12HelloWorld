@@ -6,7 +6,7 @@ using Microsoft::WRL::ComPtr;
 class D3D12HelloWindow :public DXSample
 {
 public:
-    D3D12HelloWindow(UINT width, UINT height, std::wstring name);
+    D3D12HelloWindow(UINT width, UINT height, std::wstring name,UINT frameCount=2);
 
     virtual void OnInit();
     virtual void OnUpdate();
@@ -20,11 +20,7 @@ public:
     virtual void BuildPS0();
 
 private:
-    static const UINT FrameCount = 2;
-
     
-    ComPtr<ID3D12Resource> m_renderTargets[FrameCount];
-    ComPtr<ID3D12DescriptorHeap> m_rtvHeap;
 
     void LoadPipeline();
     void LoadAssets();

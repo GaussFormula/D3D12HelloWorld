@@ -9,7 +9,7 @@ using Microsoft::WRL::ComPtr;
 class DXSample
 {
 public:
-    DXSample(UINT width, UINT height, std::wstring name);
+    DXSample(UINT width, UINT height, std::wstring name,UINT frameCount=2);
     virtual ~DXSample();
 
     virtual void OnInit() = 0;
@@ -46,6 +46,9 @@ protected:
     virtual void CreateSwapChain();
     virtual void FlushCommandQueue();
     void CalculateFrameStats();
+    bool Get4xMsaaState()const;
+    virtual void Set4xMsaaState(bool);
+    virtual void OnResize();
 
     virtual void BuildDescriptorHeaps() = 0;
     virtual void BuildConstantBuffers() = 0;
@@ -98,8 +101,9 @@ protected:
     ComPtr<ID3D12Resource>                  m_vertexBuffer;
     D3D12_VERTEX_BUFFER_VIEW                m_vertexBufferView;
 
-    //static const UINT                       FrameCount = 2;
-    //ComPtr<ID3D12Resource>                  m_renderTarget[FrameCount];
+    UINT                                    m_frameCount = 2;
+    //ComPtr<ID3D12Resource>                m_renderTarget[FrameCount];
+    std::vector<ComPtr<ID3D12Resource>>     m_renderTargets;
     ComPtr<ID3D12Resource>                  m_depthStencilBuffer;
 
     // Synchronization objects.
