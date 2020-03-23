@@ -305,4 +305,37 @@ void DXSample::OnResize()
     }
     m_depthStencilBuffer.Reset();
 
+    // Resize the swap chain
+    ThrowIfFailed(m_swapChain->ResizeBuffers(
+        m_frameCount,
+        m_width,
+        m_height,
+        m_backBufferFormat,
+        DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH
+    ));
+    m_frameIndex = 0;
+
+    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart());
+    for (UINT i=0;i<m_frameCount;i++)
+    {
+        ThrowIfFailed(m_swapChain->GetBuffer(i, IID_PPV_ARGS(&m_renderTargets[i])));
+        m_device->CreateRenderTargetView(m_renderTargets[i].Get(), nullptr, rtvHeapHandle);
+        rtvHeapHandle.Offset(1, m_rtvDescriptorSize);
+    }
+
+    // Create the depth/stencil buffer and view.
+    D3D12_RESOURCE_DESC depthStencilDesc;
+    depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    depthStencilDesc.Alignment = 0;
+    depthStencilDesc.Width = m_width;
+    depthStencilDesc.Height = m_height;
+    depthStencilDesc.DepthOrArraySize = 1;
+    depthStencilDesc.MipLevels = 1;
+
+    // Caution: SSAO chapter requires an SRV to the depth buffer to read from
+    // the depth buffer. Therefore, because we need to create two views to the same resources,
+    // 1. SRV format :DXGI_FORMAT_R24_UNORM_X8_TYPELESS
+    // 2. DSV format :DXGI_FORMAT_D24_UNORM_S8_UINT
+    // we need to create the depth buffer resource with a typeless format
+    depthStencilDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
 }
