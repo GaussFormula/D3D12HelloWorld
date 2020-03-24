@@ -376,5 +376,15 @@ void DXSample::OnResize()
     m_commandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
 
     // Wait until resize is complete.
+    FlushCommandQueue();
 
+    // Update the viewport transform to cover the client area.
+    m_screenViewport.TopLeftX = 0;
+    m_screenViewport.TopLeftY = 0;
+    m_screenViewport.Width = static_cast<float>(m_width);
+    m_screenViewport.Height = static_cast<float>(m_height);
+    m_screenViewport.MinDepth = 0.0f;
+    m_screenViewport.MaxDepth = 1.0f;
+
+    m_scissorRect = { 0,0,m_width,m_height };
 }
