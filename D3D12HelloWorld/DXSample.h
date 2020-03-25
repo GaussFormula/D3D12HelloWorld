@@ -31,6 +31,12 @@ public:
 
     void ParseCommandLineArgs(_In_reads_(argc) WCHAR* argv[], int argc);
     void StopTimer();
+    void StartTimer();
+    void SetProgramPauseState(bool);
+    void SetWindowMinimizedState(bool);
+    void SetWindowMaximizedState(bool);
+    void SetWindowResizingState(bool);
+    void SetWindowFullscreenState(bool);
 
 protected:
     std::wstring GetAssetFullPath(LPCWSTR assetName);
@@ -58,6 +64,11 @@ protected:
     virtual void BuildOwnGeometry() = 0;
     virtual void BuildPS0() = 0;
     
+    bool m_programPaused = false;   // is the application paused?
+    bool m_windowMinimized = false; // is the application minimized?
+    bool m_windowMaximized = false; // is the application maximized?
+    bool m_windowResizing = false;  // are the resize bars being dragged?
+    bool m_windowFullscreenState = false;   // fullscreen enabled
 
     //Adapter info.
     bool m_useWarpDevice;

@@ -393,3 +393,48 @@ void DXSample::StopTimer()
 {
     mTimer.Stop();
 }
+
+void DXSample::StartTimer()
+{
+    mTimer.Start();
+}
+
+void DXSample::SetProgramPauseState(bool state)
+{
+    if (m_programPaused != state)
+    {
+        m_programPaused = state;
+    }
+}
+
+void DXSample::SetWindowFullscreenState(bool state)
+{
+    if (m_windowFullscreenState != state)
+    {
+        m_windowFullscreenState = state;
+    }
+}
+
+void DXSample::SetWindowMaximizedState(bool state)
+{
+    if (m_windowMaximized != state)
+    {
+        m_windowMaximized = state;
+    }
+}
+
+void DXSample::SetWindowMinimizedState(bool state)
+{
+    if (m_windowMinimized!=state)
+    {
+        m_windowMinimized = state;
+    }
+}
+
+void DXSample::SetWindowResizingState(bool state)
+{
+    if (m_windowResizing != state)
+    {
+        m_windowResizing = state;
+    }
+}

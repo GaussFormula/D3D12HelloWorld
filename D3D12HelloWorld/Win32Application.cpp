@@ -87,11 +87,13 @@ LRESULT CALLBACK Win32Application::WindowProc(HWND hWnd, UINT message, WPARAM wP
         SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pCreateStruct->lpCreateParams));
         if (LODWORD(wParam) == WA_INACTIVE)
         {
+            m_pSample->SetProgramPauseState(true);
             m_pSample->StopTimer();
         }
         else
         {
-
+            m_pSample->SetProgramPauseState(false);
+            m_pSample->StartTimer();
         }
     }
     return 0;
