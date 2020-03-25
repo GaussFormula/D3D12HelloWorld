@@ -16,6 +16,7 @@ HWND Win32Application::m_hwnd = nullptr;
 
 int Win32Application::Run(DXSample* pSample, HINSTANCE hInstance, int nCmdShow)
 {
+    m_pSample = pSample;
     // Parse the command line parameters
     int argc;
     LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
@@ -84,6 +85,10 @@ LRESULT CALLBACK Win32Application::WindowProc(HWND hWnd, UINT message, WPARAM wP
         // Save the DXSample* passed in to CreateWindow.
         LPCREATESTRUCT pCreateStruct = reinterpret_cast<LPCREATESTRUCT>(lParam);
         SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pCreateStruct->lpCreateParams));
+        if (LODWORD(wParam) == WA_INACTIVE)
+        {
+            m_pSample->StopTimer();
+        }
     }
     return 0;
 
