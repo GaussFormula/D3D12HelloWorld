@@ -89,6 +89,10 @@ LRESULT CALLBACK Win32Application::WindowProc(HWND hWnd, UINT message, WPARAM wP
         {
             m_pSample->StopTimer();
         }
+        else
+        {
+
+        }
     }
     return 0;
 
