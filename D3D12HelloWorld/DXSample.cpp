@@ -388,3 +388,8 @@ void DXSample::OnResize()
 
     m_scissorRect = { 0,0,m_width,m_height };
 }
+
+void DXSample::StopTimer()
+{
+    mTimer.Stop();
+}
