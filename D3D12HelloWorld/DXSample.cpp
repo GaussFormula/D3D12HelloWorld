@@ -438,3 +438,33 @@ void DXSample::SetWindowResizingState(bool state)
         m_windowResizing = state;
     }
 }
+
+void DXSample::SetWindowWidth(int value)
+{
+    m_width = value;
+}
+
+void DXSample::SetWindowHeight(int value)
+{
+    m_height = value;
+}
+
+ID3D12Device* DXSample::GetDevice()const
+{
+    return m_device.Get();
+}
+
+bool DXSample::GetWindowMinimized()const
+{
+    return m_windowMinimized;
+}
+
+bool DXSample::GetWindowMaximized()const
+{
+    return m_windowMaximized;
+}
+
+bool DXSample::GetWindowResizing()const
+{
+    return m_windowResizing;
+}

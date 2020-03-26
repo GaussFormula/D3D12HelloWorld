@@ -23,11 +23,16 @@ public:
     //Samples override the event handlers to handle specific messages
     virtual void OnKeyDown(UINT8) {}
     virtual void OnKeyUp(UINT8) {}
+    virtual void OnResize();
 
     //Accessors
     UINT GetWidth()const { return m_width; }
     UINT GetHeight()const { return m_height; }
     const WCHAR* GetTitle() const { return m_title.c_str(); }
+    ID3D12Device* GetDevice()const;
+    bool GetWindowMinimized()const;
+    bool GetWindowMaximized()const;
+    bool GetWindowResizing()const;
 
     void ParseCommandLineArgs(_In_reads_(argc) WCHAR* argv[], int argc);
     void StopTimer();
@@ -37,6 +42,9 @@ public:
     void SetWindowMaximizedState(bool);
     void SetWindowResizingState(bool);
     void SetWindowFullscreenState(bool);
+    void SetWindowWidth(int);
+    void SetWindowHeight(int);
+
 
 protected:
     std::wstring GetAssetFullPath(LPCWSTR assetName);
@@ -55,7 +63,6 @@ protected:
     void CalculateFrameStats();
     bool Get4xMsaaState()const;
     virtual void Set4xMsaaState(bool);
-    virtual void OnResize();
 
     virtual void BuildDescriptorHeaps() = 0;
     virtual void BuildConstantBuffers() = 0;
