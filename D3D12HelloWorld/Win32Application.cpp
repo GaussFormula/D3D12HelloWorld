@@ -140,10 +140,34 @@ LRESULT CALLBACK Win32Application::WindowProc(HWND hWnd, UINT message, WPARAM wP
                     // the buffers here because as the user continuously
                     // drags the resize bars, a stream of WM_SIZE messages are 
                     // sent to the window, and it would be pointless (and slow)
-                    // to 
+                    // to resize for each WM_SIZE message received from dragging
+                    // the resize bars. So instead, we reset after the user is
+                    // done resizing the window and releases the resize bars, which
+                    // sends a WM_EXITSIZEMOVE message.
+                }
+                else // API call such as SetWindowPos or m_swapChain->SetFullscreenState.
+                {
+                    pSample->OnResize();
                 }
             }
         }
+        return 0;
+
+
+    // WM_ENTERSIZEMOVE is sent when the user grabs the resize bars.
+    case WM_ENTERSIZEMOVE:
+        pSample->SetProgramPauseState(true);
+        pSample->SetWindowResizingState(true);
+        pSample->StopTimer();
+        return 0;
+
+    //  WM_EXITSIZEMOVE is sent when the user releases the resize bars.
+    //  Here we reset everything based on the new window dimensions.
+    case WM_EXITSIZEMOVE:
+        pSample->SetProgramPauseState(false);
+        pSample->SetWindowResizingState(false);
+        pSample->StartTimer();
+        return 0;
 
     case WM_KEYDOWN:
         if (pSample)
