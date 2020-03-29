@@ -13,8 +13,8 @@ public:
     virtual ~DXSample();
 
     virtual void OnInit() = 0;
-    virtual void OnUpdate() = 0;
-    virtual void OnRender() = 0;
+    virtual void OnUpdate(const GameTimer& gt) = 0;
+    virtual void OnRender(const GameTimer& gt) = 0;
     virtual void OnDestroy() = 0;
 
     DXSample(const DXSample& rhs) = delete;
@@ -25,6 +25,11 @@ public:
     virtual void OnKeyUp(UINT8) {}
     virtual void OnResize();
 
+    // Convenience overrides for handling mouse input.
+    virtual void OnMouseDown(WPARAM btnState,int x,int y){}
+    virtual void OnMouseUp(WPARAM btnState,int x,int y){}
+    virtual void OnMouseMove(WPARAM btnState,int x,int y){}
+
     //Accessors
     UINT GetWidth()const { return m_width; }
     UINT GetHeight()const { return m_height; }
@@ -33,10 +38,12 @@ public:
     bool GetWindowMinimized()const;
     bool GetWindowMaximized()const;
     bool GetWindowResizing()const;
+    bool GetProgramPauseState()const;
 
     void ParseCommandLineArgs(_In_reads_(argc) WCHAR* argv[], int argc);
     void StopTimer();
     void StartTimer();
+    void TickTimer();
     void SetProgramPauseState(bool);
     void SetWindowMinimizedState(bool);
     void SetWindowMaximizedState(bool);
@@ -45,6 +52,7 @@ public:
     void SetWindowWidth(int);
     void SetWindowHeight(int);
 
+    void CalculateFrameStats();
 
 protected:
     std::wstring GetAssetFullPath(LPCWSTR assetName);
@@ -60,7 +68,6 @@ protected:
     void CreateCommandObjects();
     virtual void CreateSwapChain();
     virtual void FlushCommandQueue();
-    void CalculateFrameStats();
     bool Get4xMsaaState()const;
     virtual void Set4xMsaaState(bool);
 

@@ -468,3 +468,13 @@ bool DXSample::GetWindowResizing()const
 {
     return m_windowResizing;
 }
+
+void DXSample::TickTimer()
+{
+    mTimer.Tick();
+}
+
+bool DXSample::GetProgramPauseState()const
+{
+    return m_programPaused;
+}

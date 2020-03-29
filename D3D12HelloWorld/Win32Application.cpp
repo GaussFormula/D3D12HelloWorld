@@ -11,6 +11,7 @@
 
 #include "stdafx.h"
 #include "Win32Application.h"
+#include <windowsx.h>
 
 HWND Win32Application::m_hwnd = nullptr;
 
@@ -63,6 +64,15 @@ int Win32Application::Run(DXSample* pSample, HINSTANCE hInstance, int nCmdShow)
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
+        }
+        else
+        {
+            pSample->TickTimer();
+            if (!pSample->GetProgramPauseState())
+            {
+                pSample->CalculateFrameStats();
+
+            }
         }
     }
 
@@ -169,6 +179,22 @@ LRESULT CALLBACK Win32Application::WindowProc(HWND hWnd, UINT message, WPARAM wP
         pSample->StartTimer();
         return 0;
 
+    // The WM_MENUCHAR message is sent when a menu is active and the user presses
+    // a key that does not correspond to any mnemonic or accelerator key.
+    case WM_MENUCHAR:
+        // Don't beep when we alt-enter.
+        return MAKELRESULT(0, MNC_CLOSE);
+
+    case WM_GETMINMAXINFO:
+        ((MINMAXINFO*)lParam)->ptMinTrackSize.x = 200;
+        ((MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
+
+    case WM_LBUTTONDOWN:
+    case WM_MBUTTONDOWN:
+    case WM_RBUTTONDOWN:
+        pSample->OnMouseDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+        return 0;
+
     case WM_KEYDOWN:
         if (pSample)
         {
@@ -183,13 +209,13 @@ LRESULT CALLBACK Win32Application::WindowProc(HWND hWnd, UINT message, WPARAM wP
         }
         return 0;
 
-    case WM_PAINT:
-        if (pSample)
-        {
-            pSample->OnUpdate();
-            pSample->OnRender();
-        }
-        return 0;
+        /*case WM_PAINT:
+            if (pSample)
+            {
+                pSample->OnUpdate();
+                pSample->OnRender();
+            }
+            return 0;*/
 
     case WM_DESTROY:
         PostQuitMessage(0);
