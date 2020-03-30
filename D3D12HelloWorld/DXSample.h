@@ -22,7 +22,17 @@ public:
 
     //Samples override the event handlers to handle specific messages
     virtual void OnKeyDown(UINT8) {}
-    virtual void OnKeyUp(UINT8) {}
+    virtual void OnKeyUp(UINT8 wParam) 
+    {
+        if (wParam == VK_ESCAPE)
+        {
+            PostQuitMessage(0);
+        }
+        else if(wParam==VK_F2)
+        {
+            m_4xMsaaState = !m_4xMsaaState;
+        }
+    }
     virtual void OnResize();
 
     // Convenience overrides for handling mouse input.
