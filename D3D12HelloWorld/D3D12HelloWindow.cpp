@@ -14,8 +14,10 @@ void D3D12HelloWindow::OnInit()
     CreateFactoryDeviceAdapter();
     InitDescriptorSize();
     CheckFeatureSupport();
+    CreateSwapChain();
     CreateCommandObjects();
     CreateFenceObjects();
+    OnResize();
 }
 
 // Load the rendering pipeline dependencies.
@@ -226,4 +228,9 @@ void D3D12HelloWindow::WaitForPreviousFrame()
     }
 
     m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
+}
+
+void D3D12HelloWindow::BuildDescriptorHeaps()
+{
+
 }

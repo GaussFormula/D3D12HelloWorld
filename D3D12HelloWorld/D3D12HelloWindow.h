@@ -8,16 +8,16 @@ class D3D12HelloWindow :public DXSample
 public:
     D3D12HelloWindow(UINT width, UINT height, std::wstring name,UINT frameCount=2);
 
-    virtual void OnInit();
-    virtual void OnUpdate();
-    virtual void OnRender();
-    virtual void OnDestroy();
-    virtual void BuildDescriptorHeaps();
-    virtual void BuildConstantBuffers();
-    virtual void BuildRootSignature();
-    virtual void BuildShaderAndInputLayout();
-    virtual void BuildOwnGeometry();
-    virtual void BuildPS0();
+    virtual void OnInit() override;
+    virtual void OnUpdate() override;
+    virtual void OnRender() override;
+    virtual void OnDestroy() override;
+    virtual void BuildDescriptorHeaps() override;
+    virtual void BuildConstantBuffers()override;
+    virtual void BuildRootSignature()override;
+    virtual void BuildShaderAndInputLayoutoverride();
+    virtual void BuildOwnGeometry()override;
+    virtual void BuildPS0()override;
 
 private:
     

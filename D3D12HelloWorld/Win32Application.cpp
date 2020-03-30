@@ -54,6 +54,7 @@ int Win32Application::Run(DXSample* pSample, HINSTANCE hInstance, int nCmdShow)
     pSample->OnInit();
 
     ShowWindow(m_hwnd, nCmdShow);
+    UpdateWindow(m_hwnd);
 
     // Main sample loop.
     MSG msg = {};
@@ -119,14 +120,14 @@ LRESULT CALLBACK Win32Application::WindowProc(HWND hWnd, UINT message, WPARAM wP
                 pSample->SetWindowMinimizedState(true);
                 pSample->SetWindowMaximizedState(false);
             }
-            else if (wParam==SIZE_MAXIMIZED)
+            else if (wParam == SIZE_MAXIMIZED)
             {
                 pSample->SetProgramPauseState(false);
                 pSample->SetWindowMinimizedState(false);
                 pSample->SetWindowMaximizedState(true);
                 pSample->OnResize();
             }
-            else if(wParam==SIZE_RESTORED)
+            else if (wParam == SIZE_RESTORED)
             {
                 // Is Restoring from minimized state?
                 if (pSample->GetWindowMinimized())
@@ -164,23 +165,23 @@ LRESULT CALLBACK Win32Application::WindowProc(HWND hWnd, UINT message, WPARAM wP
         return 0;
 
 
-    // WM_ENTERSIZEMOVE is sent when the user grabs the resize bars.
+        // WM_ENTERSIZEMOVE is sent when the user grabs the resize bars.
     case WM_ENTERSIZEMOVE:
         pSample->SetProgramPauseState(true);
         pSample->SetWindowResizingState(true);
         pSample->StopTimer();
         return 0;
 
-    //  WM_EXITSIZEMOVE is sent when the user releases the resize bars.
-    //  Here we reset everything based on the new window dimensions.
+        //  WM_EXITSIZEMOVE is sent when the user releases the resize bars.
+        //  Here we reset everything based on the new window dimensions.
     case WM_EXITSIZEMOVE:
         pSample->SetProgramPauseState(false);
         pSample->SetWindowResizingState(false);
         pSample->StartTimer();
         return 0;
 
-    // The WM_MENUCHAR message is sent when a menu is active and the user presses
-    // a key that does not correspond to any mnemonic or accelerator key.
+        // The WM_MENUCHAR message is sent when a menu is active and the user presses
+        // a key that does not correspond to any mnemonic or accelerator key.
     case WM_MENUCHAR:
         // Don't beep when we alt-enter.
         return MAKELRESULT(0, MNC_CLOSE);
@@ -213,13 +214,13 @@ LRESULT CALLBACK Win32Application::WindowProc(HWND hWnd, UINT message, WPARAM wP
         }
         return 0;
 
-        /*case WM_PAINT:
-            if (pSample)
-            {
-                pSample->OnUpdate();
-                pSample->OnRender();
-            }
-            return 0;*/
+    case WM_PAINT:
+        if (pSample)
+        {
+            pSample->OnUpdate();
+            pSample->OnRender();
+        }
+        return 0;
 
     case WM_DESTROY:
         PostQuitMessage(0);

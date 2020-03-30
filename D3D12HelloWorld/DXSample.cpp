@@ -478,3 +478,10 @@ bool DXSample::GetProgramPauseState()const
 {
     return m_programPaused;
 }
+
+void DXSample::CreateRtvAndDsvDescriptorHeaps()
+{
+    D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
+    rtvHeapDesc.NumDescriptors = m_frameCount;
+
+}

@@ -78,6 +78,7 @@ protected:
     void CreateCommandObjects();
     virtual void CreateSwapChain();
     virtual void FlushCommandQueue();
+    virtual void CreateRtvAndDsvDescriptorHeaps();
     bool Get4xMsaaState()const;
     virtual void Set4xMsaaState(bool);
 
