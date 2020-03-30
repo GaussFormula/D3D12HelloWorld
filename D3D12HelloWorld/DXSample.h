@@ -13,8 +13,8 @@ public:
     virtual ~DXSample();
 
     virtual void OnInit() = 0;
-    virtual void OnUpdate(const GameTimer& gt) = 0;
-    virtual void OnRender(const GameTimer& gt) = 0;
+    virtual void OnUpdate() = 0;
+    virtual void OnRender() = 0;
     virtual void OnDestroy() = 0;
 
     DXSample(const DXSample& rhs) = delete;
