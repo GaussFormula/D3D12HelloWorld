@@ -12,7 +12,7 @@ public:
     virtual void OnUpdate() override;
     virtual void OnRender() override;
     virtual void OnDestroy() override;
-    virtual void BuildDescriptorHeaps() override;
+    virtual void BuildConstantDescriptorHeaps() override;
     virtual void BuildConstantBuffers()override;
     virtual void BuildRootSignature()override;
     virtual void BuildShaderAndInputLayoutoverride();

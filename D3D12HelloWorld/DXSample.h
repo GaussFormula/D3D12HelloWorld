@@ -82,7 +82,7 @@ protected:
     bool Get4xMsaaState()const;
     virtual void Set4xMsaaState(bool);
 
-    virtual void BuildDescriptorHeaps() = 0;
+    virtual void BuildConstantDescriptorHeaps() = 0;
     virtual void BuildConstantBuffers() = 0;
     virtual void BuildRootSignature() = 0;
     virtual void BuildShaderAndInputLayout() = 0;
@@ -126,6 +126,7 @@ protected:
     ComPtr<ID3D12DescriptorHeap>            m_rtvHeap;
     ComPtr<ID3D12DescriptorHeap>            m_srvHeap;
     ComPtr<ID3D12DescriptorHeap>            m_dsvHeap;
+    ComPtr<ID3D12DescriptorHeap>            m_cbvHeap;
     ComPtr<ID3D12PipelineState>             m_pipelineState;
     ComPtr<ID3D12PipelineState>             m_pipelineState;
     ComPtr<ID3D12Device>                    m_device;
