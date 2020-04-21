@@ -239,3 +239,39 @@ void D3D12HelloWindow::BuildConstantDescriptorHeaps()
     cbvHeapDesc.NodeMask = 0;
     ThrowIfFailed(m_device->CreateDescriptorHeap(&cbvHeapDesc, IID_PPV_ARGS(&m_cbvHeap)));
 }
+
+void D3D12HelloWindow::BuildConstantBuffers()
+{
+    m_objectConstantBuffer = std::make_unique<UploadBuffer<ObjectConstants>>(m_device.Get(), 1, true);
+
+    UINT objectConstantBufferByteSize = CalculateConstantBufferByteSize(sizeof(ObjectConstants));
+
+    D3D12_GPU_VIRTUAL_ADDRESS cbAddress = m_objectConstantBuffer->Resource()->GetGPUVirtualAddress();
+
+    // Offset to the ith object constant buffer in the buffer.
+    int constantBufferIndex = 0;
+    cbAddress += constantBufferIndex * objectConstantBufferByteSize;
+
+    D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
+    cbvDesc.BufferLocation = cbAddress;
+    cbvDesc.SizeInBytes = CalculateConstantBufferByteSize(sizeof(ObjectConstants));
+
+    // Bind constant buffer view to a subregion of the buffer
+    m_device->CreateConstantBufferView(
+        &cbvDesc,
+        m_cbvHeap->GetCPUDescriptorHandleForHeapStart()
+    );
+}
+
+void D3D12HelloWindow::BuildRootSignature()
+{
+    // Root parameter can be a table, root descriptor or root constants.
+    CD3DX12_ROOT_PARAMETER slotRootParameter[1];
+
+    // Create a single descriptor table of CBVs.
+    CD3DX12_DESCRIPTOR_RANGE cbvTable;
+    cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
+    slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable);
+
+    // A root signature is an array of root parameters.
+}

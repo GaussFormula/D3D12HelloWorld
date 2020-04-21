@@ -23,7 +23,8 @@ public:
             nullptr,
             IID_PPV_ARGS(&mUploadBuffer)
         ));
-
+        //	However,we must	not	write to the resource while	it is in use by			
+        //	the	GPU	(so	we must use synchronization techniques).
         ThrowIfFailed(mUploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(mMappedData)));
     }
 

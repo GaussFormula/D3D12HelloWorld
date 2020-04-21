@@ -1,7 +1,18 @@
 #pragma once
 #include "DXSample.h"
+#include "UploadBuffer.h"
 
 using Microsoft::WRL::ComPtr;
+
+struct ObjectConstants
+{
+    XMFLOAT4X4 WorldViewProj=
+        DirectX::XMFLOAT4X4 (
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f);
+};
 
 class D3D12HelloWindow :public DXSample
 {
@@ -26,4 +37,6 @@ private:
     void LoadAssets();
     void PopulateCommandList();
     void WaitForPreviousFrame();
+
+    std::unique_ptr <UploadBuffer<ObjectConstants>> m_objectConstantBuffer = nullptr;
 };
