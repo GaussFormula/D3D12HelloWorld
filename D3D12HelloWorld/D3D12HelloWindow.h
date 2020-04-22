@@ -26,7 +26,7 @@ public:
     virtual void BuildConstantDescriptorHeaps() override;
     virtual void BuildConstantBuffers()override;
     virtual void BuildRootSignature()override;
-    virtual void BuildShaderAndInputLayoutoverride();
+    virtual void BuildShaderAndInputLayout()override;
     virtual void BuildOwnGeometry()override;
     virtual void BuildPS0()override;
 
@@ -39,4 +39,6 @@ private:
     void WaitForPreviousFrame();
 
     std::unique_ptr <UploadBuffer<ObjectConstants>> m_objectConstantBuffer = nullptr;
+    ComPtr<ID3DBlob> m_vsByteCode = nullptr;
+    ComPtr<ID3DBlob> m_psByteCode = nullptr;
 };
