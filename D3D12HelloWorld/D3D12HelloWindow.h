@@ -41,4 +41,6 @@ private:
     std::unique_ptr <UploadBuffer<ObjectConstants>> m_objectConstantBuffer = nullptr;
     ComPtr<ID3DBlob> m_vsByteCode = nullptr;
     ComPtr<ID3DBlob> m_psByteCode = nullptr;
+
+    std::vector<D3D12_INPUT_ELEMENT_DESC> m_inputLayout;
 };

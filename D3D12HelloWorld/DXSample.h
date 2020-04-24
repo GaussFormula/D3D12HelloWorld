@@ -81,6 +81,15 @@ protected:
     virtual void CreateRtvAndDsvDescriptorHeaps();
     bool Get4xMsaaState()const;
     virtual void Set4xMsaaState(bool);
+    D3D12_INPUT_ELEMENT_DESC InitInputLayoutDescription(
+        LPSTR SemanticName,
+        UINT SemanticIndex,
+        DXGI_FORMAT Format,
+        UINT InputSlot,
+        UINT AlignedByteOffset,
+        D3D12_INPUT_CLASSIFICATION InputSlotClass,
+        UINT InstanceDataStepRate
+        );
 
     virtual void BuildConstantDescriptorHeaps() = 0;
     virtual void BuildConstantBuffers() = 0;

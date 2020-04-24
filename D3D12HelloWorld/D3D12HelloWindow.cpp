@@ -295,9 +295,12 @@ void D3D12HelloWindow::BuildShaderAndInputLayout()
 {
 #if defined (_DEBUG)
     // Enable better shader debugging with the graphics debugging tools.
-    UINT complieFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+    UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 #else
-    UINT complieFlags = 0;
+    UINT compileFlags = 0;
 #endif // (_DEBUG)
-
+    ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"shaders.hlsl").c_str(), nullptr, nullptr, "VSMain", "vs5_0", compileFlags, 0, &m_vsByteCode, nullptr));
+    ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"shaders.hlsl").c_str(), nullptr, nullptr, "PSMain", "ps5_0", compileFlags, 0, &m_psByteCode, nullptr));
+    m_inputLayout.push_back(InitInputLayoutDescription((LPSTR)"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0));
+    m_inputLayout.push_back(InitInputLayoutDescription((LPSTR)"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0));
 }

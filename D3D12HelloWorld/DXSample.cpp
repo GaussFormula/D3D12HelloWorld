@@ -485,3 +485,20 @@ void DXSample::CreateRtvAndDsvDescriptorHeaps()
     rtvHeapDesc.NumDescriptors = m_frameCount;
 
 }
+
+D3D12_INPUT_ELEMENT_DESC DXSample::InitInputLayoutDescription(
+    LPSTR SemanticName,
+    UINT SemanticIndex,
+    DXGI_FORMAT Format,
+    UINT InputSlot,
+    UINT AlignedByteOffset,
+    D3D12_INPUT_CLASSIFICATION InputSlotClass,
+    UINT InstanceDataStepRate
+    )
+{
+    D3D12_INPUT_ELEMENT_DESC temp =
+    {
+        SemanticName,SemanticIndex,Format,InputSlot,AlignedByteOffset,InputSlotClass,InstanceDataStepRate
+    };
+    return temp;
+}
