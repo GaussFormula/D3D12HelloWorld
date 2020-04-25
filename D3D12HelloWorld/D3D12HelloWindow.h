@@ -43,4 +43,7 @@ private:
     ComPtr<ID3DBlob> m_psByteCode = nullptr;
 
     std::vector<D3D12_INPUT_ELEMENT_DESC> m_inputLayout;
+    std::unique_ptr<MeshGeometry> m_geometry = nullptr;
+
+
 };
