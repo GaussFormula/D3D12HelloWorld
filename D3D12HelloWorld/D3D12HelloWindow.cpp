@@ -363,5 +363,21 @@ void D3D12HelloWindow::BuildOwnGeometry()
     ThrowIfFailed(D3DCreateBlob(ibByteSize, &m_geometry->IndexBufferCPU));
     CopyMemory(m_geometry->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
 
+    m_geometry->VertexBufferGPU = CreateDefaultBuffer(m_device.Get(), m_commandList.Get(), vertices.data(),
+        vbByteSize, m_geometry->VertexBufferUploadBuffer);
 
+    m_geometry->IndexBufferGPU = CreateDefaultBuffer(m_device.Get(), m_commandList.Get(), indices.data(), ibByteSize,
+        m_geometry->IndexBufferUploadBuffer);
+
+    m_geometry->VertexByteStride = sizeof(Vertex);
+    m_geometry->VertexBufferByteSize = vbByteSize;
+    m_geometry->IndexFormat = DXGI_FORMAT_R16_UINT;
+    m_geometry->IndexBufferByteSize = ibByteSize;
+
+    SubmeshGeometry submesh;
+    submesh.IndexCount = (UINT)indices.size();
+    submesh.StartIndexLoacation = 0;
+    submesh.BaseVertexLoction = 0;
+    
+    m_geometry->DrawArgs["box"] = submesh;
 }

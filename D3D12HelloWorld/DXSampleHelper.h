@@ -233,4 +233,13 @@ ComPtr<ID3D12Resource> CreateDefaultBuffer(
         D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST
     ));
     UpdateSubresources<1>(cmdList, defaultBuffer.Get(), uploadBuffer.Get(), 0, 0, 1, &subResourceData);
+    cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(defaultBuffer.Get(),
+        D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ
+    ));
+
+    // Note: uploadBuffer has to be kept alive after the above function calls because
+    // the command list has not been executed yet that performs the actual copy.
+    // The caller can Release the uploadBuffer after it knows the copy has been executed.
+
+    return defaultBuffer;
 }
