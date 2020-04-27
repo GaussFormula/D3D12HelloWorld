@@ -381,3 +381,21 @@ void D3D12HelloWindow::BuildOwnGeometry()
     
     m_geometry->DrawArgs["box"] = submesh;
 }
+
+void D3D12HelloWindow::BuildPSO()
+{
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
+    ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+    psoDesc.InputLayout = { m_inputLayout.data(),(UINT)m_inputLayout.size() };
+    psoDesc.pRootSignature = m_rootSignature.Get();
+    psoDesc.VS =
+    {
+        reinterpret_cast<BYTE*>(m_vsByteCode->GetBufferPointer()),
+        m_vsByteCode->GetBufferSize()
+    };
+    psoDesc.PS =
+    {
+        reinterpret_cast<BYTE*>(m_psByteCode->GetBufferPointer()),
+        m_psByteCode->GetBufferSize()
+    };
+}

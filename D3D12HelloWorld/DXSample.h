@@ -96,7 +96,7 @@ protected:
     virtual void BuildRootSignature() = 0;
     virtual void BuildShaderAndInputLayout() = 0;
     virtual void BuildOwnGeometry() = 0;
-    virtual void BuildPS0() = 0;
+    virtual void BuildPSO() = 0;
     
     bool m_programPaused = false;   // is the application paused?
     bool m_windowMinimized = false; // is the application minimized?

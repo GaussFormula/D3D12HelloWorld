@@ -28,7 +28,7 @@ public:
     virtual void BuildRootSignature()override;
     virtual void BuildShaderAndInputLayout()override;
     virtual void BuildOwnGeometry()override;
-    virtual void BuildPS0()override;
+    virtual void BuildPSO()override;
 
 private:
     
