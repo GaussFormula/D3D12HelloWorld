@@ -398,4 +398,15 @@ void D3D12HelloWindow::BuildPSO()
         reinterpret_cast<BYTE*>(m_psByteCode->GetBufferPointer()),
         m_psByteCode->GetBufferSize()
     };
+    psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+    psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+    psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+    psoDesc.SampleMask = UINT_MAX;
+    psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+    psoDesc.NumRenderTargets = 1;
+    psoDesc.RTVFormats[0] = m_backBufferFormat;
+    psoDesc.SampleDesc.Count = m_4xMsaaState ? 4 : 1;
+    psoDesc.SampleDesc.Quality = m_4xMsaaState ? (m_4xMsaaQuality - 1) : 0;
+    psoDesc.DSVFormat = m_depthStencilFormat;
+    ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
 }
