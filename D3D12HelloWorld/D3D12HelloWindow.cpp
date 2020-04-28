@@ -17,13 +17,17 @@ void D3D12HelloWindow::OnInit()
 {
     /*LoadPipeline();
     LoadAssets();*/
-    CreateFactoryDeviceAdapter();
+    /*CreateFactoryDeviceAdapter();
     InitDescriptorSize();
     CheckFeatureSupport();
     CreateSwapChain();
     CreateCommandObjects();
     CreateFenceObjects();
-    OnResize();
+    OnResize();*/
+    if (InitializeDirect3D())
+    {
+
+    }
 }
 
 // Load the rendering pipeline dependencies.

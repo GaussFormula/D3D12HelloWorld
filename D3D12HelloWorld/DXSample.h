@@ -90,6 +90,7 @@ protected:
         D3D12_INPUT_CLASSIFICATION InputSlotClass,
         UINT InstanceDataStepRate
         );
+    bool InitializeDirect3D();
 
     virtual void BuildConstantDescriptorHeaps() = 0;
     virtual void BuildConstantBuffers() = 0;

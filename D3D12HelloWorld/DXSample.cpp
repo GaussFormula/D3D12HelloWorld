@@ -483,7 +483,17 @@ void DXSample::CreateRtvAndDsvDescriptorHeaps()
 {
     D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
     rtvHeapDesc.NumDescriptors = m_frameCount;
+    rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    rtvHeapDesc.NodeMask = 0;
+    ThrowIfFailed(m_device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_rtvHeap)));
 
+    D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
+    dsvHeapDesc.NumDescriptors = 1;
+    dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+    dsvHeapDesc.NodeMask = 0;
+    ThrowIfFailed(m_device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_dsvHeap)));
 }
 
 D3D12_INPUT_ELEMENT_DESC DXSample::InitInputLayoutDescription(
@@ -501,4 +511,17 @@ D3D12_INPUT_ELEMENT_DESC DXSample::InitInputLayoutDescription(
         SemanticName,SemanticIndex,Format,InputSlot,AlignedByteOffset,InputSlotClass,InstanceDataStepRate
     };
     return temp;
+}
+
+bool DXSample::InitializeDirect3D()
+{
+    CreateFactoryDeviceAdapter();
+    InitDescriptorSize();
+    CheckFeatureSupport();
+    CreateSwapChain();
+    CreateCommandObjects();
+    CreateRtvAndDsvDescriptorHeaps();
+    CreateFenceObjects();
+    OnResize();
+    return true;
 }
