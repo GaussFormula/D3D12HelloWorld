@@ -15,19 +15,22 @@ D3D12HelloWindow::D3D12HelloWindow(UINT width, UINT height, std::wstring name,UI
 
 void D3D12HelloWindow::OnInit()
 {
-    /*LoadPipeline();
-    LoadAssets();*/
-    /*CreateFactoryDeviceAdapter();
-    InitDescriptorSize();
-    CheckFeatureSupport();
-    CreateSwapChain();
-    CreateCommandObjects();
-    CreateFenceObjects();
-    OnResize();*/
-    if (InitializeDirect3D())
-    {
+    assert(DXSample::Initialize());
 
-    }
+    // Reset the command list to prepare for initialization
+    // commands.
+    ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), nullptr));
+    
+    BuildConstantDescriptorHeaps();
+    BuildConstantBuffers();
+    BuildRootSignature();
+    BuildShaderAndInputLayout();
+    BuildOwnGeometry();
+    BuildPSO();
+
+    // Execute the initialization commands.
+    ThrowIfFailed(m_commandList->Close());
+
 }
 
 // Load the rendering pipeline dependencies.

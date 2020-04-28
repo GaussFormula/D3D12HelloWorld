@@ -91,6 +91,7 @@ protected:
         UINT InstanceDataStepRate
         );
     bool InitializeDirect3D();
+    bool Initialize();
 
     virtual void BuildConstantDescriptorHeaps() = 0;
     virtual void BuildConstantBuffers() = 0;

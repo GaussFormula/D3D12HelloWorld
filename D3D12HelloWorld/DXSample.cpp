@@ -522,6 +522,18 @@ bool DXSample::InitializeDirect3D()
     CreateCommandObjects();
     CreateRtvAndDsvDescriptorHeaps();
     CreateFenceObjects();
+    return true;
+}
+
+bool DXSample::Initialize()
+{
+    if (!InitializeDirect3D())
+    {
+        return false;
+    }
+
+    // Do the initial resize code.
     OnResize();
+
     return true;
 }
