@@ -138,8 +138,6 @@ protected:
     ComPtr<ID3D12DescriptorHeap>            m_srvHeap;
     ComPtr<ID3D12DescriptorHeap>            m_dsvHeap;
     ComPtr<ID3D12DescriptorHeap>            m_cbvHeap;
-    ComPtr<ID3D12PipelineState>             m_pipelineState;
-    ComPtr<ID3D12PipelineState>             m_pipelineState;
     ComPtr<ID3D12Device>                    m_device;
     ComPtr<IDXGIAdapter1>                   m_adapter;
     UINT                                    m_rtvDescriptorSize = 0;

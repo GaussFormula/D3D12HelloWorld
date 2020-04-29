@@ -417,3 +417,36 @@ void D3D12HelloWindow::BuildPSO()
     psoDesc.DSVFormat = m_depthStencilFormat;
     ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
 }
+
+void D3D12HelloWindow::OnResize()
+{
+    DXSample::OnResize();
+
+    // The window resized, so update the aspect ratio and 
+    // recompute the projection matrix.
+    m_projMatrix = XMMatrixPerspectiveFovLH(0.25f * XM_PI, m_aspectRatio, 1.0f, 1000.0f);
+}
+
+void D3D12HelloWindow::OnMouseDown(WPARAM btnState, int x, int y)
+{
+    m_lastMousePos.x = x;
+    m_lastMousePos.y = y;
+}
+
+void D3D12HelloWindow::OnMouseUp(WPARAM btnState, int x, int y)
+{
+
+}
+
+void D3D12HelloWindow::OnMouseMove(WPARAM btnState, int x, int y)
+{
+    if ((btnState & MK_LBUTTON) != 0)
+    {
+        // Make each pixel correspond to a quarter of a degree.
+        float dx = XMConvertToRadians(0.25f * static_cast<float>(x - m_lastMousePos.x));
+        float dy = XMConvertToRadians(0.25f * static_cast<float>(y - m_lastMousePos.y));
+
+        // Update angles base on input to orbit camera around object.
+
+    }
+}
