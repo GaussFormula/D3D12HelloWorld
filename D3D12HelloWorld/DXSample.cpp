@@ -537,3 +537,22 @@ bool DXSample::Initialize()
 
     return true;
 }
+
+ID3D12Resource* DXSample::GetCurrentBackBuffer()const
+{
+    return m_renderTargets[m_frameIndex].Get();
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE DXSample::GetCurrentBackBufferView()const
+{
+    return CD3DX12_CPU_DESCRIPTOR_HANDLE(
+        m_rtvHeap->GetCPUDescriptorHandleForHeapStart(),
+        m_frameIndex,
+        m_rtvDescriptorSize
+    );
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE DXSample::GetDepthStencilView()const
+{
+    return m_dsvHeap->GetCPUDescriptorHandleForHeapStart();
+}

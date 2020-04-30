@@ -6,12 +6,13 @@ using Microsoft::WRL::ComPtr;
 
 struct ObjectConstants
 {
-    XMFLOAT4X4 WorldViewProj=
+    /*XMFLOAT4X4 WorldViewProj=
         DirectX::XMFLOAT4X4 (
             1.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f, 0.0f,
             0.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f);
+            0.0f, 0.0f, 0.0f, 1.0f);*/
+    XMMATRIX worldViewProj = XMMatrixIdentity();
 };
 
 class D3D12HelloWindow :public DXSample

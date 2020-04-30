@@ -165,24 +165,65 @@ void D3D12HelloWindow::LoadAssets()
 // Update frame-based values.
 void D3D12HelloWindow::OnUpdate()
 {
+    // Convert Spherical to Cartesian coordinates.
+    float x = m_radius * sinf(m_phi) * cosf(m_theta);
+    float y = m_radius * cosf(m_phi);
+    float z = m_radius * sinf(m_phi) * sinf(m_theta);
 
+    // Build the view matrix.
+    XMVECTOR pos = XMVectorSet(x, y, z, 1.0f);
+    XMVECTOR target = XMVectorZero();
+    XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+    m_viewMatrix = XMMatrixLookAtLH(pos, target, up);
+    XMMATRIX worldViewProj = m_worldMatrix * m_viewMatrix * m_projMatrix;
+
+    // Update the constant buffer with the latest worldViewProj
+    ObjectConstants objConstants;
+    objConstants.worldViewProj = worldViewProj;
+    m_objectConstantBuffer->CopyData(0, objConstants);
 }
 
 // Render the scene.
 void D3D12HelloWindow::OnRender()
 {
-    // Record all the commands we need to render the scene into the command list.
-    PopulateCommandList();
+    // Reuse the memory associated with command recording.
+    // We can only reset when the associated command lists 
+    // have finished execution on the GPU.
+    ThrowIfFailed(m_commandAllocator->Reset());
 
-    // Execute the command list.
-    ID3D12CommandList* ppCommandList[] = { m_commandList.Get() };
-    m_commandQueue->ExecuteCommandLists(_countof(ppCommandList), ppCommandList);
+    // A command list can be reset after it has been added to
+    // the command queue via ExecuteCommandList.
+    // Reusing the command list reuses memory.
+    ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), nullptr));
 
+    m_commandList->RSSetViewports(1, &m_screenViewport);
+    m_commandList->RSSetScissorRects(1, &m_scissorRect);
 
-    // Present the frame.
-    ThrowIfFailed(m_swapChain->Present(1, 0));
+    // Indicate a state transition on resource usage.
+    m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(),
+        D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-    WaitForPreviousFrame();
+    // Clear the back buffer and depth buffer.
+    m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
+    m_commandList->ClearRenderTargetView(
+        GetCurrentBackBufferView(),
+        Colors::LightSteelBlue,
+        0,
+        nullptr
+    );
+    m_commandList->ClearDepthStencilView(
+        GetDepthStencilView(),
+        D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
+        1.0f,0,0,nullptr
+    );
+
+    // Specify the buffers we are going to render to.
+    m_commandList->OMSetRenderTargets(1, 
+        &GetCurrentBackBufferView(), true, 
+        &GetDepthStencilView()
+    );
+
 }
 
 void D3D12HelloWindow::OnDestroy()
@@ -447,6 +488,38 @@ void D3D12HelloWindow::OnMouseMove(WPARAM btnState, int x, int y)
         float dy = XMConvertToRadians(0.25f * static_cast<float>(y - m_lastMousePos.y));
 
         // Update angles base on input to orbit camera around object.
+        m_theta += dx;
+        m_phi += dy;
 
+        // Restrict the angle m_phi
+        if (m_phi <= 0.1f)
+        {
+            m_phi = 0.1f;
+        }
+        if (m_phi >= XM_PI - 0.1f)
+        {
+            m_phi = XM_PI - 0.1f;
+        }
     }
+    else if((btnState&MK_RBUTTON)!=0)
+    {
+        // Make each pixel correspond to 0.005 unit in the scene.
+        float dx = 0.005f * static_cast<float>(x - m_lastMousePos.x);
+        float dy = 0.005f * static_cast<float>(y - m_lastMousePos.y);
+
+        // Update the camera radius based on input.
+        m_radius += dx - dy;
+
+        // Restrict the radius.
+        if (m_radius <= 3.0f)
+        {
+            m_radius = 3.0f;
+        }
+        if (m_radius >= 15.0f)
+        {
+            m_radius = 15.0f;
+        }
+    }
+    m_lastMousePos.x = x;
+    m_lastMousePos.y = y;
 }

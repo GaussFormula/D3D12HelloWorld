@@ -92,6 +92,9 @@ protected:
         );
     bool InitializeDirect3D();
     bool Initialize();
+    ID3D12Resource* GetCurrentBackBuffer()const;
+    D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentBackBufferView()const;
+    D3D12_CPU_DESCRIPTOR_HANDLE GetDepthStencilView()const;
 
     virtual void BuildConstantDescriptorHeaps() = 0;
     virtual void BuildConstantBuffers() = 0;
