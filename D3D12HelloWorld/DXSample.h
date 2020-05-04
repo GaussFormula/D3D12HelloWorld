@@ -152,12 +152,8 @@ protected:
     UINT                                    m_dsvDescriptorSize = 0;
     UINT                                    m_cbvSrvUavDescriptorSize = 0;
 
-    // App resources.
-    ComPtr<ID3D12Resource>                  m_vertexBuffer;
-    D3D12_VERTEX_BUFFER_VIEW                m_vertexBufferView;
-
+    
     UINT                                    m_frameCount = 2;
-    //ComPtr<ID3D12Resource>                m_renderTarget[FrameCount];
     std::vector<ComPtr<ID3D12Resource>>     m_renderTargets;
     ComPtr<ID3D12Resource>                  m_depthStencilBuffer;
 
@@ -165,7 +161,7 @@ protected:
     ComPtr<ID3D12Fence>                     m_fence;
     UINT                                    m_frameIndex = 0;
     HANDLE                                  m_fenceEvent;
-    std::vector<UINT64>                     m_fenceValue;
+    std::vector<UINT64>                     m_fenceValues;
 
     D3D12_VIEWPORT                          m_screenViewport;
     D3D12_RECT                              m_scissorRect;

@@ -57,7 +57,7 @@ private:
     ComPtr<ID3D12Fence> m_fence;
     UINT m_frameIndex;
     HANDLE m_fenceEvent;
-    UINT64 m_fenceValue;
+    UINT64 m_fenceValues;
 
     void LoadPipeline();
     void LoadAssets();

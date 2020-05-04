@@ -327,7 +327,7 @@ void D3D12HelloTexture::LoadAssets()
     // Create synchronization objects and wait until assets have been uploaded to the GPU.
     {
         ThrowIfFailed(m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
-        m_fenceValue = 1;
+        m_fenceValues = 1;
 
         // Create an event handle to use for frame synchronization.
         m_fenceEvent = CreateEvent(nullptr, false, false, nullptr);
@@ -453,9 +453,9 @@ void D3D12HelloTexture::PopulateCommandList()
 void D3D12HelloTexture::WaitForPreviousFrame()
 {
     // Signal and increment the fence value.
-    const UINT64 fence = m_fenceValue;
+    const UINT64 fence = m_fenceValues;
     ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), fence));
-    m_fenceValue++;
+    m_fenceValues++;
 
     // Wait until the previous frame is finished.
     if (m_fence->GetCompletedValue() < fence)

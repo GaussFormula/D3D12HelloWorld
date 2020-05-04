@@ -123,7 +123,7 @@ void D3D12HelloWindow::OnRender()
     m_commandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
 
     // Swap the back and front buffers.
-    ThrowIfFailed(m_swapChain->Present(1, 0));
+    ThrowIfFailed(m_swapChain->Present(0, 0));
     MoveToNextFrame();
 }
 
@@ -345,7 +345,7 @@ void D3D12HelloWindow::OnResize()
 
     // The window resized, so update the aspect ratio and 
     // recompute the projection matrix.
-    m_projMatrix = XMMatrixPerspectiveFovLH(0.25f * XM_PI, m_aspectRatio, 1.0f, 1000.0f);
+    m_projMatrix = XMMatrixPerspectiveFovLH(0.25f * XM_PI, m_aspectRatio, 0.3f, 1000.0f);
 }
 
 void D3D12HelloWindow::OnMouseDown(WPARAM btnState, int x, int y)
