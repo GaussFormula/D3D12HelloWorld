@@ -7,7 +7,7 @@ struct Vertex
     XMFLOAT4 Color;
 };
 
-D3D12HelloWindow::D3D12HelloWindow(UINT width, UINT height, std::wstring name,UINT frameCount=2):
+D3D12HelloWindow::D3D12HelloWindow(UINT width, UINT height, std::wstring name,UINT frameCount):
     DXSample(width,height,name,frameCount)
 {
 
@@ -180,7 +180,7 @@ void D3D12HelloWindow::OnUpdate()
 
     // Update the constant buffer with the latest worldViewProj
     ObjectConstants objConstants;
-    objConstants.worldViewProj = worldViewProj;
+    objConstants.worldViewProj = XMMatrixTranspose(worldViewProj);
     m_objectConstantBuffer->CopyData(0, objConstants);
 }
 
@@ -195,7 +195,7 @@ void D3D12HelloWindow::OnRender()
     // A command list can be reset after it has been added to
     // the command queue via ExecuteCommandList.
     // Reusing the command list reuses memory.
-    ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), nullptr));
+    ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), m_pipelineState.Get()));
 
     m_commandList->RSSetViewports(1, &m_screenViewport);
     m_commandList->RSSetScissorRects(1, &m_scissorRect);
@@ -205,7 +205,6 @@ void D3D12HelloWindow::OnRender()
         D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
     // Clear the back buffer and depth buffer.
-    m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
     m_commandList->ClearRenderTargetView(
         GetCurrentBackBufferView(),
         Colors::LightSteelBlue,
@@ -224,15 +223,48 @@ void D3D12HelloWindow::OnRender()
         &GetDepthStencilView()
     );
 
+    ID3D12DescriptorHeap* descriptorHeap[] = { m_cbvHeap.Get() };
+    m_commandList->SetDescriptorHeaps(_countof(descriptorHeap), descriptorHeap);
+
+    m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
+
+    m_commandList->IASetVertexBuffers(0, 1, &m_geometry->VertexBufferView());
+    m_commandList->IASetIndexBuffer(&m_geometry->IndexBufferView());
+    m_commandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    m_commandList->SetGraphicsRootDescriptorTable(0, m_cbvHeap->GetGPUDescriptorHandleForHeapStart());
+
+    m_commandList->DrawIndexedInstanced(
+        m_geometry->DrawArgs["box"].IndexCount,
+        1, 0, 0, 0
+    );
+
+    // Indicate a state transition on the resource usage.
+    m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+        GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+
+    // Done recording commands.
+    ThrowIfFailed(m_commandList->Close());
+
+    // Add command list to the queue for execution.
+    ID3D12CommandList* cmdLists[] = { m_commandList.Get() };
+    m_commandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
+
+    // Swap the back and front buffers.
+    ThrowIfFailed(m_swapChain->Present(0, 0));
+    m_frameIndex = (m_frameIndex + 1) % m_frameCount;
+    // Wait until frame commands are completed. This waiting is inefficient
+    // and done for simplicity
+    FlushCommandQueue();
 }
 
 void D3D12HelloWindow::OnDestroy()
 {
     // Ensure that the GPU is no longer referencing resources
     // that are about to be cleaned up by the destructor.
-    WaitForPreviousFrame();
+   /* WaitForPreviousFrame();
 
-    CloseHandle(m_fenceEvent);
+    CloseHandle(m_fenceEvent);*/
 }
 
 void D3D12HelloWindow::PopulateCommandList()
@@ -280,8 +312,6 @@ void D3D12HelloWindow::WaitForPreviousFrame()
         ThrowIfFailed(m_fence->SetEventOnCompletion(fence, m_fenceEvent));
         WaitForSingleObject(m_fenceEvent, INFINITE);
     }
-
-    m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
 }
 
 void D3D12HelloWindow::BuildConstantDescriptorHeaps()
@@ -353,8 +383,8 @@ void D3D12HelloWindow::BuildShaderAndInputLayout()
 #else
     UINT compileFlags = 0;
 #endif // (_DEBUG)
-    ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"shaders.hlsl").c_str(), nullptr, nullptr, "VSMain", "vs5_0", compileFlags, 0, &m_vsByteCode, nullptr));
-    ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"shaders.hlsl").c_str(), nullptr, nullptr, "PSMain", "ps5_0", compileFlags, 0, &m_psByteCode, nullptr));
+    ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"shaders.hlsl").c_str(), nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &m_vsByteCode, nullptr));
+    ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"shaders.hlsl").c_str(), nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &m_psByteCode, nullptr));
     m_inputLayout.push_back(InitInputLayoutDescription((LPSTR)"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0));
     m_inputLayout.push_back(InitInputLayoutDescription((LPSTR)"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0));
 }

@@ -3,7 +3,7 @@
 
 using namespace Microsoft::WRL;
 
-DXSample::DXSample(UINT width, UINT height, std::wstring name, UINT frameCount = 2) :
+DXSample::DXSample(UINT width, UINT height, std::wstring name, UINT frameCount) :
     m_width(width),
     m_height(height),
     m_title(name),
@@ -87,7 +87,7 @@ void DXSample::CreateFactoryDeviceAdapter()
     debugController->EnableDebugLayer();
     dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 #endif
-    ThrowIfFailed(CreateDXGIFactory2(0, IID_PPV_ARGS(&m_factory)));
+    ThrowIfFailed(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&m_factory)));
     if (m_useWarpDevice)
     {
         ThrowIfFailed(m_factory->EnumWarpAdapter(IID_PPV_ARGS(&m_adapter)));
@@ -198,6 +198,7 @@ void DXSample::CreateSwapChain()
     swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
     swapChainDesc.SampleDesc.Count = m_4xMsaaState ? 4 : 1;
     swapChainDesc.SampleDesc.Quality = m_4xMsaaState ? (m_4xMsaaQuality - 1) : 0;
+    swapChainDesc.BufferCount = m_frameCount;
 
     DXGI_SWAP_CHAIN_FULLSCREEN_DESC desc = {};
     desc.RefreshRate = { 60,1 };
@@ -205,15 +206,16 @@ void DXSample::CreateSwapChain()
     desc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
     desc.Windowed = true;
 
+    
 
 
     ThrowIfFailed(m_factory->CreateSwapChainForHwnd(
         m_commandQueue.Get(),
         Win32Application::GetHwnd(),
         &swapChainDesc,
-        &desc,
         nullptr,
-        &swapChain
+        nullptr,
+        swapChain.ReleaseAndGetAddressOf()
     ));
     ThrowIfFailed(m_factory->MakeWindowAssociation(Win32Application::GetHwnd(), DXGI_MWA_NO_ALT_ENTER));
     ThrowIfFailed(swapChain.As(&m_swapChain));
@@ -221,23 +223,24 @@ void DXSample::CreateSwapChain()
 
 void DXSample::FlushCommandQueue()
 {
-    const UINT64 fence = m_fenceValue;
     // Advance the fence value to mark commands up to this fence point.
     m_fenceValue++;
 
     // Add an instruction to the command queue to set a new fence point.
     // Because we are on the GPU time line, the new fence point won't be set until
     // the GPU finishes processing all the commands prior to this Signal().
-    ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), fence));
+    ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), m_fenceValue));
 
     // Wait until the GPU has completed commands up to this fence point.
-    if (m_fence->GetCompletedValue() < fence)
+    if (m_fence->GetCompletedValue() < m_fenceValue)
     {
+        HANDLE eventHandle = CreateEventEx(nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, EVENT_ALL_ACCESS);
         // Fire event when GPU hits current fence.
-        ThrowIfFailed(m_fence->SetEventOnCompletion(fence, m_fenceEvent));
+        ThrowIfFailed(m_fence->SetEventOnCompletion(m_fenceValue, m_fenceEvent));
 
         // Wait until the GPU hits current fence event is fired.
         WaitForSingleObject(m_fenceEvent, INFINITE);
+        CloseHandle(eventHandle);
     }
     m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
 }
@@ -299,7 +302,7 @@ void DXSample::OnResize()
     ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), nullptr));
 
     // Release the previous resources we will be recreating.
-    for (int i=0;i<m_frameCount;i++)
+    for (UINT i=0;i<m_frameCount;i++)
     {
         m_renderTargets[i].Reset();
     }
@@ -386,7 +389,7 @@ void DXSample::OnResize()
     m_screenViewport.MinDepth = 0.0f;
     m_screenViewport.MaxDepth = 1.0f;
 
-    m_scissorRect = { 0,0,m_width,m_height };
+    m_scissorRect = { 0,0,static_cast<long>(m_width),static_cast<long>(m_height) };
 }
 
 void DXSample::StopTimer()
@@ -488,6 +491,8 @@ void DXSample::CreateRtvAndDsvDescriptorHeaps()
     rtvHeapDesc.NodeMask = 0;
     ThrowIfFailed(m_device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_rtvHeap)));
 
+    m_renderTargets.resize(m_frameCount);
+
     D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
     dsvHeapDesc.NumDescriptors = 1;
     dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
@@ -518,8 +523,8 @@ bool DXSample::InitializeDirect3D()
     CreateFactoryDeviceAdapter();
     InitDescriptorSize();
     CheckFeatureSupport();
-    CreateSwapChain();
     CreateCommandObjects();
+    CreateSwapChain();
     CreateRtvAndDsvDescriptorHeaps();
     CreateFenceObjects();
     return true;

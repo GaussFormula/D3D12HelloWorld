@@ -42,9 +42,6 @@
     <ClInclude Include="D3D12HelloTriangle.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="D3D12HelloSquare.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="D3D12HelloTexture.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -74,13 +71,13 @@
     <ClCompile Include="D3D12HelloTriangle.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="D3D12HelloSquare.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="D3D12HelloTexture.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="GameTimer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DXSampleHelper.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

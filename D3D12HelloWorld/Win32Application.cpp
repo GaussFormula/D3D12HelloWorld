@@ -72,7 +72,12 @@ int Win32Application::Run(DXSample* pSample, HINSTANCE hInstance, int nCmdShow)
             if (!pSample->GetProgramPauseState())
             {
                 pSample->CalculateFrameStats();
-
+                pSample->OnUpdate();
+                pSample->OnRender();
+            }
+            else
+            {
+                Sleep(100);
             }
         }
     }
@@ -97,87 +102,103 @@ LRESULT CALLBACK Win32Application::WindowProc(HWND hWnd, UINT message, WPARAM wP
         SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pCreateStruct->lpCreateParams));
         if (LODWORD(wParam) == WA_INACTIVE)
         {
-            pSample->SetProgramPauseState(true);
-            pSample->StopTimer();
+            if (pSample)
+            {
+                pSample->SetProgramPauseState(true);
+                pSample->StopTimer();
+            }
         }
         else
         {
-            pSample->SetProgramPauseState(false);
-            pSample->StartTimer();
+            if (pSample)
+            {
+                pSample->SetProgramPauseState(false);
+                pSample->StartTimer();
+            }
         }
     }
     return 0;
 
     // WM_SIZE is sent when the user resizes the window.
     case WM_SIZE:
-        pSample->SetWindowWidth(LOWORD(lParam));
-        pSample->SetWindowHeight(HIWORD(lParam));
-        if (pSample->GetDevice())
+        if (pSample)
         {
-            if (wParam == SIZE_MINIMIZED)
+            pSample->SetWindowWidth(LOWORD(lParam));
+            pSample->SetWindowHeight(HIWORD(lParam));
+            if (pSample->GetDevice())
             {
-                pSample->SetProgramPauseState(true);
-                pSample->SetWindowMinimizedState(true);
-                pSample->SetWindowMaximizedState(false);
-            }
-            else if (wParam == SIZE_MAXIMIZED)
-            {
-                pSample->SetProgramPauseState(false);
-                pSample->SetWindowMinimizedState(false);
-                pSample->SetWindowMaximizedState(true);
-                pSample->OnResize();
-            }
-            else if (wParam == SIZE_RESTORED)
-            {
-                // Is Restoring from minimized state?
-                if (pSample->GetWindowMinimized())
+                if (wParam == SIZE_MINIMIZED)
+                {
+                    pSample->SetProgramPauseState(true);
+                    pSample->SetWindowMinimizedState(true);
+                    pSample->SetWindowMaximizedState(false);
+                }
+                else if (wParam == SIZE_MAXIMIZED)
                 {
                     pSample->SetProgramPauseState(false);
                     pSample->SetWindowMinimizedState(false);
+                    pSample->SetWindowMaximizedState(true);
                     pSample->OnResize();
                 }
+                else if (wParam == SIZE_RESTORED)
+                {
+                    // Is Restoring from minimized state?
+                    if (pSample->GetWindowMinimized())
+                    {
+                        pSample->SetProgramPauseState(false);
+                        pSample->SetWindowMinimizedState(false);
+                        pSample->OnResize();
+                    }
 
-                // Is Restoring from maximized state?
-                else if (pSample->GetWindowMaximized())
-                {
-                    pSample->SetProgramPauseState(false);
-                    pSample->SetWindowMaximizedState(false);
-                    pSample->OnResize();
-                }
+                    // Is Restoring from maximized state?
+                    else if (pSample->GetWindowMaximized())
+                    {
+                        pSample->SetProgramPauseState(false);
+                        pSample->SetWindowMaximizedState(false);
+                        pSample->OnResize();
+                    }
 
-                else if (pSample->GetWindowResizing())
-                {
-                    // If user is dragging the resize bars, we do not resize 
-                    // the buffers here because as the user continuously
-                    // drags the resize bars, a stream of WM_SIZE messages are 
-                    // sent to the window, and it would be pointless (and slow)
-                    // to resize for each WM_SIZE message received from dragging
-                    // the resize bars. So instead, we reset after the user is
-                    // done resizing the window and releases the resize bars, which
-                    // sends a WM_EXITSIZEMOVE message.
-                }
-                else // API call such as SetWindowPos or m_swapChain->SetFullscreenState.
-                {
-                    pSample->OnResize();
+                    else if (pSample->GetWindowResizing())
+                    {
+                        // If user is dragging the resize bars, we do not resize 
+                        // the buffers here because as the user continuously
+                        // drags the resize bars, a stream of WM_SIZE messages are 
+                        // sent to the window, and it would be pointless (and slow)
+                        // to resize for each WM_SIZE message received from dragging
+                        // the resize bars. So instead, we reset after the user is
+                        // done resizing the window and releases the resize bars, which
+                        // sends a WM_EXITSIZEMOVE message.
+                    }
+                    else // API call such as SetWindowPos or m_swapChain->SetFullscreenState.
+                    {
+                        pSample->OnResize();
+                    }
                 }
             }
         }
         return 0;
+        
 
 
-        // WM_ENTERSIZEMOVE is sent when the user grabs the resize bars.
+    // WM_ENTERSIZEMOVE is sent when the user grabs the resize bars.
     case WM_ENTERSIZEMOVE:
-        pSample->SetProgramPauseState(true);
-        pSample->SetWindowResizingState(true);
-        pSample->StopTimer();
+        if (pSample)
+        {
+            pSample->SetProgramPauseState(true);
+            pSample->SetWindowResizingState(true);
+            pSample->StopTimer();
+        }
         return 0;
 
         //  WM_EXITSIZEMOVE is sent when the user releases the resize bars.
         //  Here we reset everything based on the new window dimensions.
     case WM_EXITSIZEMOVE:
-        pSample->SetProgramPauseState(false);
-        pSample->SetWindowResizingState(false);
-        pSample->StartTimer();
+        if (pSample)
+        {
+            pSample->SetProgramPauseState(false);
+            pSample->SetWindowResizingState(false);
+            pSample->StartTimer();
+        }
         return 0;
 
         // The WM_MENUCHAR message is sent when a menu is active and the user presses
@@ -193,14 +214,20 @@ LRESULT CALLBACK Win32Application::WindowProc(HWND hWnd, UINT message, WPARAM wP
     case WM_LBUTTONDOWN:
     case WM_MBUTTONDOWN:
     case WM_RBUTTONDOWN:
-        pSample->OnMouseDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-        SetCapture(hWnd);
+        if (pSample)
+        {
+            pSample->OnMouseDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+            SetCapture(hWnd);
+        }
         return 0;
     case WM_LBUTTONUP:
     case WM_MBUTTONUP:
     case WM_RBUTTONUP:
-        pSample->OnMouseUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-        ReleaseCapture();
+        if (pSample)
+        {
+            pSample->OnMouseUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+            ReleaseCapture();
+        }
         return 0;
     case WM_KEYDOWN:
         if (pSample)

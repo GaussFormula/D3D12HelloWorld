@@ -1,22 +1,31 @@
-struct PSInput
+cbuffer cbPerObject:register(b0)
 {
-    float4 position:SV_POSITION;
-    float2 uv:TEXCOORD;
+    float4x4 gWorldViewProj;
 };
 
-Texture2D g_texture:register(t0);
-SamplerState g_sampler:register(s0);
+struct VSInput
+{
+    float3 posL:POSITION;
+    float4 color:COLOR;
+};
 
-PSInput VSMain(float4 position:POSITION, float4 uv : TEXCOORD)
+struct PSInput
+{
+    float4 posH:SV_POSITION;
+    float4 color:COLOR;
+};
+
+PSInput VSMain(VSInput vin)
 {
     PSInput result;
-    result.position = position;
-    result.uv = uv;
 
+    // Transform to homogeneous clip spaces.
+    result.posH = mul(float4(vin.posL, 1.0f), gWorldViewProj);
+    result.color = vin.color;
     return result;
 }
 
-float4 PSMain(PSInput input) :SV_TARGET
+float4 PSMain(PSInput input) : SV_TARGET
 {
-    return g_texture.Sample(g_sampler,input.uv);
+    return input.color;
 }
