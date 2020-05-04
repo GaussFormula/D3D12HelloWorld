@@ -119,13 +119,17 @@ void DXSample::CreateFactoryDeviceAdapter()
 
 void DXSample::CreateFenceObjects()
 {
-    ThrowIfFailed(m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
-    m_fenceValue = 1;
+    m_fenceValue.resize(m_frameCount);
+    ThrowIfFailed(m_device->CreateFence(m_fenceValue[m_frameIndex], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
+    m_fenceValue[m_frameIndex]++;
+
+    // Create an event handle to use for frame synchronization.
     m_fenceEvent = CreateEvent(nullptr, false, false, nullptr);
     if (m_fenceEvent == nullptr)
     {
         ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
     }
+    WaitForGPU();
 }
 
 void DXSample::InitDescriptorSize()
@@ -221,29 +225,8 @@ void DXSample::CreateSwapChain()
     ThrowIfFailed(swapChain.As(&m_swapChain));
 }
 
-void DXSample::FlushCommandQueue()
-{
-    // Advance the fence value to mark commands up to this fence point.
-    m_fenceValue++;
 
-    // Add an instruction to the command queue to set a new fence point.
-    // Because we are on the GPU time line, the new fence point won't be set until
-    // the GPU finishes processing all the commands prior to this Signal().
-    ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), m_fenceValue));
 
-    // Wait until the GPU has completed commands up to this fence point.
-    if (m_fence->GetCompletedValue() < m_fenceValue)
-    {
-        HANDLE eventHandle = CreateEventEx(nullptr, nullptr, CREATE_EVENT_MANUAL_RESET, EVENT_ALL_ACCESS);
-        // Fire event when GPU hits current fence.
-        ThrowIfFailed(m_fence->SetEventOnCompletion(m_fenceValue, m_fenceEvent));
-
-        // Wait until the GPU hits current fence event is fired.
-        WaitForSingleObject(m_fenceEvent, INFINITE);
-        CloseHandle(eventHandle);
-    }
-    m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
-}
 
 void DXSample::CalculateFrameStats()
 {
@@ -297,7 +280,7 @@ void DXSample::OnResize()
     assert(m_commandAllocator);
 
     // Flush before changing any resources.
-    FlushCommandQueue();
+    //WaitForGPU();
 
     ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), nullptr));
 
@@ -379,7 +362,7 @@ void DXSample::OnResize()
     m_commandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
 
     // Wait until resize is complete.
-    FlushCommandQueue();
+    WaitForGPU();
 
     // Update the viewport transform to cover the client area.
     m_screenViewport.TopLeftX = 0;
@@ -400,6 +383,11 @@ void DXSample::StopTimer()
 void DXSample::StartTimer()
 {
     mTimer.Start();
+}
+
+void DXSample::ResetTimer()
+{
+    mTimer.Reset();
 }
 
 void DXSample::SetProgramPauseState(bool state)
@@ -536,7 +524,6 @@ bool DXSample::Initialize()
     {
         return false;
     }
-
     // Do the initial resize code.
     OnResize();
 
@@ -560,4 +547,74 @@ D3D12_CPU_DESCRIPTOR_HANDLE DXSample::GetCurrentBackBufferView()const
 D3D12_CPU_DESCRIPTOR_HANDLE DXSample::GetDepthStencilView()const
 {
     return m_dsvHeap->GetCPUDescriptorHandleForHeapStart();
+}
+
+int DXSample::Run()
+{
+    MSG msg = { 0 };
+
+    mTimer.Reset();
+
+    while (msg.message != WM_QUIT)
+    {
+        // If there are Window messages then process them.
+        if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+        // Otherwise, do animation/game stuff.
+        else
+        {
+            mTimer.Tick();
+
+            if (!m_programPaused)
+            {
+                CalculateFrameStats();
+                OnUpdate();
+                OnRender();
+            }
+            else
+            {
+                Sleep(100);
+            }
+        }
+    }
+
+    return (int)msg.wParam;
+}
+
+// Wait for pending GPU work to complete.
+void DXSample::WaitForGPU()
+{
+    // Schedule a Signal command in the queue.
+    ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), m_fenceValue[m_frameIndex]));
+
+    // Wait until the fence has been processed.
+    ThrowIfFailed(m_fence->SetEventOnCompletion(m_fenceValue[m_frameIndex], m_fenceEvent));
+    WaitForSingleObjectEx(m_fenceEvent, INFINITE, FALSE);
+
+    // Increment the fence value for the current frame.
+    m_fenceValue[m_frameIndex]++;
+}
+
+// Prepare to render next frame.
+void DXSample::MoveToNextFrame()
+{
+    // Schedule a Signal command in the queue.
+    const UINT64 currentFenceValue = m_fenceValue[m_frameIndex];
+    ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), currentFenceValue));
+
+    // Update the frame index.
+    m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
+
+    // If the next frame is not ready to be rendered yet, wait until it it ready.
+    if (m_fence->GetCompletedValue() < m_fenceValue[m_frameIndex])
+    {
+        ThrowIfFailed(m_fence->SetEventOnCompletion(m_fenceValue[m_frameIndex], m_fenceEvent));
+        WaitForSingleObjectEx(m_fenceEvent, INFINITE, FALSE);
+    }
+
+    // Set the fence value for the next frame.
+    m_fenceValue[m_frameIndex] = currentFenceValue + 1;
 }

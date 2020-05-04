@@ -36,10 +36,7 @@ private:
     virtual void BuildOwnGeometry()override;
     virtual void BuildPSO()override;
 
-    void LoadPipeline();
-    void LoadAssets();
     void PopulateCommandList();
-    void WaitForPreviousFrame();
 
     virtual void OnResize() override;
 

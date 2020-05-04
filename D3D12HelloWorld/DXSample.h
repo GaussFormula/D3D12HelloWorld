@@ -54,6 +54,7 @@ public:
     void StopTimer();
     void StartTimer();
     void TickTimer();
+    void ResetTimer();
     void SetProgramPauseState(bool);
     void SetWindowMinimizedState(bool);
     void SetWindowMaximizedState(bool);
@@ -63,6 +64,8 @@ public:
     void SetWindowHeight(int);
 
     void CalculateFrameStats();
+
+    int Run();
 
 protected:
     std::wstring GetAssetFullPath(LPCWSTR assetName);
@@ -77,7 +80,6 @@ protected:
     virtual void CreateCommandList();
     void CreateCommandObjects();
     virtual void CreateSwapChain();
-    virtual void FlushCommandQueue();
     virtual void CreateRtvAndDsvDescriptorHeaps();
     bool Get4xMsaaState()const;
     virtual void Set4xMsaaState(bool);
@@ -95,6 +97,9 @@ protected:
     ID3D12Resource* GetCurrentBackBuffer()const;
     D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentBackBufferView()const;
     D3D12_CPU_DESCRIPTOR_HANDLE GetDepthStencilView()const;
+
+    void WaitForGPU();
+    void MoveToNextFrame();
 
     virtual void BuildConstantDescriptorHeaps() = 0;
     virtual void BuildConstantBuffers() = 0;
@@ -160,7 +165,7 @@ protected:
     ComPtr<ID3D12Fence>                     m_fence;
     UINT                                    m_frameIndex = 0;
     HANDLE                                  m_fenceEvent;
-    UINT64                                  m_fenceValue = 0;
+    std::vector<UINT64>                     m_fenceValue;
 
     D3D12_VIEWPORT                          m_screenViewport;
     D3D12_RECT                              m_scissorRect;
