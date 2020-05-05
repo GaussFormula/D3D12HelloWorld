@@ -19,8 +19,11 @@ void D3D12HelloWindow::OnInit()
 
     // Reset the command list to prepare for initialization
     // commands.
-    ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), nullptr));
-    
+    for (UINT i=0;i<m_frameCount;i++)
+    {
+        ThrowIfFailed(m_commandList->Reset(m_commandAllocators[i].Get(), nullptr));
+        m_commandList->Close();
+    }
     BuildConstantDescriptorHeaps();
     BuildConstantBuffers();
     BuildRootSignature();
@@ -29,7 +32,7 @@ void D3D12HelloWindow::OnInit()
     BuildPSO();
 
     // Execute the initialization commands.
-    ThrowIfFailed(m_commandList->Close());
+    //ThrowIfFailed(m_commandList->Close());
 }
 
 
@@ -62,12 +65,12 @@ void D3D12HelloWindow::OnRender()
     // We can only reset when the associated command lists 
     // have finished execution on the GPU.
     WaitForGPU();
-    ThrowIfFailed(m_commandAllocator->Reset());
+    ThrowIfFailed(m_commandAllocators[m_frameIndex]->Reset());
 
     // A command list can be reset after it has been added to
     // the command queue via ExecuteCommandList.
     // Reusing the command list reuses memory.
-    ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), m_pipelineState.Get()));
+    ThrowIfFailed(m_commandList->Reset(m_commandAllocators[m_frameIndex].Get(), m_pipelineState.Get()));
 
     m_commandList->RSSetViewports(1, &m_screenViewport);
     m_commandList->RSSetScissorRects(1, &m_scissorRect);
@@ -140,12 +143,12 @@ void D3D12HelloWindow::PopulateCommandList()
     // Command list allocators can only be reset when the associated
     // command lists have finished execution on the GPU; apps should
     // use fences to determine GPU execution progress.
-    ThrowIfFailed(m_commandAllocator->Reset());
+    ThrowIfFailed(m_commandAllocators[m_frameIndex]->Reset());
 
     // However, when ExecuteCommandList() is called on a particular
     // command list, that command list can then be reset at any time
     // and must be before re-recording.
-    ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), m_pipelineState.Get()));
+    ThrowIfFailed(m_commandList->Reset(m_commandAllocators[m_frameIndex].Get(), m_pipelineState.Get()));
 
     // Indicate that the back buffer will be used as a render target.
     m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));

@@ -119,7 +119,7 @@ void D3D12HelloTriangle::LoadPipeline()
         }
     }
 
-    ThrowIfFailed(m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocator)));
+    ThrowIfFailed(m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocators)));
 }
 
 // Load the sample assets.
@@ -182,7 +182,7 @@ void D3D12HelloTriangle::LoadAssets()
     ThrowIfFailed(m_device->CreateCommandList(
         0,
         D3D12_COMMAND_LIST_TYPE_DIRECT,
-        m_commandAllocator.Get(),
+        m_commandAllocators.Get(),
         m_pipelineState.Get(),
         IID_PPV_ARGS(&m_commandList)
     ));
@@ -282,12 +282,12 @@ void D3D12HelloTriangle::PopulateCommandList()
     // Command list allocators can only be reset when the associated
     // command lists have finished execution on the GPU; apps should use
     // fences to determine GPU execution progress.
-    ThrowIfFailed(m_commandAllocator->Reset());
+    ThrowIfFailed(m_commandAllocators->Reset());
 
     // However, when ExecuteCommandList() is called on a particular command
     // list, that command list can then be reset at any time and must before
     // re-recording.
-    ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), m_pipelineState.Get()));
+    ThrowIfFailed(m_commandList->Reset(m_commandAllocators.Get(), m_pipelineState.Get()));
 
     // Set necessary state.
     m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());

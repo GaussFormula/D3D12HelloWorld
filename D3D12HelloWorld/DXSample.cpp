@@ -165,7 +165,11 @@ void DXSample::CreateCommandQueue()
 
 void DXSample::CreateCommandAllocator()
 {
-    ThrowIfFailed(m_device->CreateCommandAllocator(m_commandListType, IID_PPV_ARGS(&m_commandAllocator)));
+    m_commandAllocators.resize(m_frameCount);
+    for (UINT i=0;i<m_frameCount;i++)
+    {
+        ThrowIfFailed(m_device->CreateCommandAllocator(m_commandListType, IID_PPV_ARGS(&m_commandAllocators[i])));
+    }
 }
 
 void DXSample::CreateCommandList()
@@ -173,7 +177,7 @@ void DXSample::CreateCommandList()
     ThrowIfFailed(m_device->CreateCommandList(
         0,
         m_commandListType,
-        m_commandAllocator.Get(),
+        m_commandAllocators[m_frameIndex].Get(),
         nullptr,
         IID_PPV_ARGS(&m_commandList)
     ));
@@ -277,12 +281,12 @@ void DXSample::OnResize()
 {
     assert(m_device);
     assert(m_swapChain);
-    assert(m_commandAllocator);
+    assert(m_commandAllocators[m_frameIndex]);
 
     // Flush before changing any resources.
     //WaitForGPU();
 
-    ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), nullptr));
+    ThrowIfFailed(m_commandList->Reset(m_commandAllocators[m_frameIndex].Get(), nullptr));
 
     // Release the previous resources we will be recreating.
     for (UINT i=0;i<m_frameCount;i++)

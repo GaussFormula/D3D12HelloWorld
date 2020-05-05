@@ -136,8 +136,8 @@ protected:
 
 
     // Pipeline Objects.
-    ComPtr<ID3D12CommandQueue>              m_commandQueue;
-    ComPtr<ID3D12CommandAllocator>          m_commandAllocator;
+    ComPtr<ID3D12CommandQueue>                  m_commandQueue;
+    std::vector<ComPtr<ID3D12CommandAllocator>> m_commandAllocators;
     ComPtr<ID3D12GraphicsCommandList>       m_commandList;
     ComPtr<IDXGISwapChain3>                 m_swapChain;
     ComPtr<IDXGIFactory4>                   m_factory;
