@@ -178,12 +178,12 @@ void D3D12HelloWindow::BuildConstantBuffers()
 {
     m_objectConstantBuffer = std::make_unique<UploadBuffer<ObjectConstants>>(m_device.Get(), 1, true);
 
-    UINT objectConstantBufferByteSize = CalculateConstantBufferByteSize(sizeof(ObjectConstants));
+    UINT64 objectConstantBufferByteSize = CalculateConstantBufferByteSize(sizeof(ObjectConstants));
 
     D3D12_GPU_VIRTUAL_ADDRESS cbAddress = m_objectConstantBuffer->Resource()->GetGPUVirtualAddress();
 
     // Offset to the ith object constant buffer in the buffer.
-    int constantBufferIndex = 0;
+    UINT64 constantBufferIndex = 0;
     cbAddress += constantBufferIndex * objectConstantBufferByteSize;
 
     D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
